@@ -1,0 +1,12 @@
+{{- $fullName := include "id.fullname" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "id.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: {{ include "id.fullname" . }}
+  ports:
+    - port: {{ .Values.service.port }}

@@ -1,0 +1,71 @@
+cd:
+  image:
+    repository: velux.jfrog.io/docker-dev/wdd/sitecore/velux-shops-cd
+  imagePullSecrets: 
+    - name: regcred-dev
+
+id:
+  image:
+    repository: velux.jfrog.io/docker-dev/wdd/sitecore/velux-shops-id
+  imagePullSecrets: 
+    - name: regcred-dev
+    
+rendering:
+  image:
+    repository: velux.jfrog.io/docker-dev/wdd/sitecore/velux-shops-rendering
+  imagePullSecrets: 
+    - name: regcred-dev
+    
+cm:
+  sidecar:
+    nugetSource: https://sitecore.myget.org/F/sc-packages/api/v3/index.json
+    image:
+      repository: velux.jfrog.io/docker-dev/wdd/sitecore/velux-shops-item-sync
+  image:
+    repository: velux.jfrog.io/docker-dev/wdd/sitecore/velux-shops-cm
+  imagePullSecrets: 
+    - name: regcred-dev
+
+global:
+  databaseNamePostfix: _dev
+  solrCorePrefixName: sitecore
+  cd:
+    ingress:
+      hosts:
+        - host: shops-cd.we-aks-d.velux.com
+          paths:
+            - path: /
+      tls:
+      - secretName: shops-cd-tls
+        hosts:
+          - shops-cd.we-aks-d.velux.com
+  cm:
+    ingress:
+      hosts:
+        - host: shops-cm.we-aks-d.velux.com
+          paths:
+            - path: /
+      tls:
+      - secretName: shops-cm-tls
+        hosts:
+          - shops-cm.we-aks-d.velux.com
+  rendering:
+    ingress:
+      hosts:
+        - host: base-shop.we-aks-d.velux.com
+          paths:
+            - path: /
+      tls:
+      - secretName: base-shop-tls
+        hosts:
+          - base-shop.we-aks-d.velux.com
+  id:
+    ingress:
+      hosts:
+        - host: shops-id.we-aks-d.velux.com
+          paths:
+            - path: /
+      tls:
+      - secretName: shops-id-tls
+        hosts:
+          - shops-id.we-aks-d.velux.com

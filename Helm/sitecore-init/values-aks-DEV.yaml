@@ -1,0 +1,13 @@
+envNamespace: sitecore
+
+init-mssql:
+  image:
+    repository: velux.jfrog.io/docker-dev/sitecore/velux-shops-xm1-mssql-init
+    tag: "10.2-ltsc2019"
+  databaseNamePostfix: "_dev"
+
+init-solr:
+  image:
+    repository: velux.jfrog.io/docker-dev/sitecore/sitecore-xm1-solr-init
+    tag: "10.2-ltsc2019"
+  solrCorePrefixName: sitecore

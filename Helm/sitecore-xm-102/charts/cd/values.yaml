@@ -1,0 +1,41 @@
+replicaCount: 1
+
+image:
+  repository: scr.sitecore.com/sxp/sitecore-xm1-cd
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "10.2-ltsc2019"
+
+imagePullSecrets: 
+  - name: sitecore-docker-registry
+nameOverride: ""
+fullnameOverride: "sitecore-cd"
+
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources:
+  requests:
+    memory: 2500Mi
+    cpu: 1000m
+  limits:
+    memory: 4Gi
+    cpu: 1500m
+
+nodeSelector: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80

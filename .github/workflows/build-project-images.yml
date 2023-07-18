@@ -1,0 +1,207 @@
+name: Build Project Images
+
+on: 
+#  push:
+#    branches: ["main"]
+  workflow_dispatch: {}
+    
+jobs:
+
+  bump-version:
+    uses: ./.github/workflows/_bump-release-version.yml
+
+  build:
+
+    runs-on: windows-2019
+    
+    environment: DEV
+    needs: [bump-version]  
+    steps:
+    
+      - uses: actions/checkout@v3
+      
+      - name: Get Environment Specific variables
+        shell: bash
+        id: env_vars
+        run: |
+          echo "helm_repo_upload_url=${{ vars.VELUX_HELM_REPO_UPLOAD_URL }}" >> $GITHUB_OUTPUT
+          echo "helm_repo=${{ vars.VELUX_HELM_REPO_URL }}" >> $GITHUB_OUTPUT    
+      
+      - name: Login to Velux jFrog
+        run: |
+          docker login velux.jfrog.io --username ${{ secrets.JFROG_DOCKER_USER }} --password ${{ secrets.JFROG_DOCKER_PASSWORD }}
+      
+      - name: Build Rendering Docker image
+        run: |
+          docker build ./client --file ./client/Dockerfile `
+            --tag ${{ vars.COMPOSE_PROJECT_NAME }}-rendering:${{ needs.bump-version.outputs.build_tag }} `
+           --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }}
+          
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-rendering:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-rendering:${{ needs.bump-version.outputs.build_tag }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-rendering:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-rendering:latest
+      
+      - name: Build Solution Docker image
+        run: |
+          docker build . --file Dockerfile `
+            --tag ${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg BUILD_CONFIGURATION=${{ vars.BUILD_CONFIGURATION }} `
+            --build-arg JFROG_USERNAME=${{ secrets.JFROG_HELM_DEV_USER }} `
+            --build-arg 'JFROG_PASSWORD=${{ secrets.JFROG_HELM_DEV_PASSWORD }}' `
+            --build-arg 'DEVOPS_USERNAME=${{ secrets.AZURE_DEVOPS_USERNAME }}' `
+            --build-arg 'DEVOPS_PASSWORD=${{ secrets.AZURE_DEVOPS_PASSWORD }}' `
+            --build-arg BUILD_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sdk:${{ vars.SDK_VERSION }}
+          
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-solution:latest
+      
+      - name: Build Sitecore Items image
+        run: |
+          docker build . --file docker/build/items/Dockerfile `
+            --tag ${{ vars.COMPOSE_PROJECT_NAME }}-item-sync:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg BASE_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sdk:${{ vars.SDK_VERSION }} `
+            --build-arg SOLUTION_IMAGE=${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg JFROG_USERNAME=${{ secrets.JFROG_HELM_DEV_USER }} `
+            --build-arg 'JFROG_PASSWORD=${{ secrets.JFROG_HELM_DEV_PASSWORD }}'
+          
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-item-sync:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-item-sync:${{ needs.bump-version.outputs.build_tag }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-item-sync:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-item-sync:latest
+              
+          
+      - name: Build Identity Docker image
+        run: |
+          docker build . --file docker/build/id/Dockerfile `
+            --tag ${{ vars.COMPOSE_PROJECT_NAME }}-id:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-id6:${{ vars.SITECORE_VERSION }} `
+            --build-arg SOLUTION_IMAGE=${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }}
+          
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-id:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-id:${{ needs.bump-version.outputs.build_tag }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-id:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-id:latest
+              
+          
+      - name: Build CD Docker image
+        run: |
+          docker build . --file docker/build/cd/Dockerfile `
+            --tag ${{ vars.COMPOSE_PROJECT_NAME }}-cd:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-xm1-cd:${{ vars.SITECORE_VERSION }} `
+            --build-arg SOLUTION_IMAGE=${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg HEADLESS_SERVICES_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-headless-services-xm1-assets:${{ vars.HEADLESS_SERVICES_VERSION }} `
+            --build-arg SPE_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-spe-assets:${{ vars.SPE_VERSION }} `
+            --build-arg TOOLS_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-docker-tools-assets:${{ vars.SITECORE_TOOLS_VERSION }}
+          
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-cd:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-cd:${{ needs.bump-version.outputs.build_tag }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-cd:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-cd:latest
+          
+          
+      - name: Build CM Docker image
+        run: |
+          docker build . --file docker/build/cm/Dockerfile `
+            --tag ${{ vars.COMPOSE_PROJECT_NAME }}-cm:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-xm1-cm:${{ vars.SITECORE_VERSION }} `
+            --build-arg SOLUTION_IMAGE=${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }} `
+            --build-arg HEADLESS_SERVICES_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-headless-services-xm1-assets:${{ vars.HEADLESS_SERVICES_VERSION }} `
+            --build-arg SPE_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-spe-assets:${{ vars.SPE_VERSION }} `
+            --build-arg MANAGEMENT_SERVICES_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-management-services-xm1-assets:${{ vars.MANAGEMENT_SERVICE_VERSION }} `
+            --build-arg TOOLS_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-docker-tools-assets:${{ vars.SITECORE_TOOLS_VERSION }}
+          
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-cm:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-cm:${{ needs.bump-version.outputs.build_tag }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-cm:${{ needs.bump-version.outputs.build_tag }} ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-cm:latest
+      
+      - name: Push Docker images
+        run: |     
+          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-solution:${{ needs.bump-version.outputs.build_tag }}
+          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-item-sync:${{ needs.bump-version.outputs.build_tag }}
+          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-id:${{ needs.bump-version.outputs.build_tag }}
+          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-rendering:${{ needs.bump-version.outputs.build_tag }}
+          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-cd:${{ needs.bump-version.outputs.build_tag }}
+          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-cm:${{ needs.bump-version.outputs.build_tag }}
+          
+    outputs:
+      helm_repo: ${{ steps.env_vars.outputs.helm_repo }}
+      helm_repo_upload_url: ${{ steps.env_vars.outputs.helm_repo_upload_url }}
+  
+  build-and-push-helm-package:
+    uses: ./.github/workflows/_build-and-push-helm-package.yml
+    needs: [bump-version, build]
+    secrets: inherit
+    with:
+      tag_version: ${{ needs.bump-version.outputs.build_tag }}
+      helm_repo_upload_url: ${{needs.build.outputs.helm_repo_upload_url}}
+      chart_path: Helm/sitecore-xm-102
+  
+  create-release:
+    needs: [bump-version, build, build-and-push-helm-package]
+    permissions: 
+      contents: write
+    uses: ./.github/workflows/_create-release.yml    
+    with:
+      version: ${{ needs.bump-version.outputs.build_tag }}
+      pre_release: false
+  
+  summarize:
+    runs-on: ubuntu-latest
+    needs: [bump-version, build, build-and-push-helm-package, create-release]
+    steps:
+    - name: Write to workflow job summary
+      run: |
+        SUMMARY=$'# Build Velux Shop Images Workflow Summary\n## New verson of images is ${{ needs.bump-version.outputs.build_tag }}'
+        echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+
+#      - name: Get Environment Specific variables
+#        shell: bash
+#        id: env_vars
+#        run: |
+#          echo "helm_repo_upload_url=${{ vars.VELUX_HELM_REPO_UPLOAD_URL }}" >> $GITHUB_OUTPUT
+#          echo "helm_repo=${{ vars.VELUX_HELM_REPO_URL }}" >> $GITHUB_OUTPUT
+          
+          
+#    outputs:
+#      helm_repo: ${{ steps.env_vars.outputs.helm_repo }}
+#      helm_repo_upload_url: ${{ steps.env_vars.outputs.helm_repo_upload_url }}
+      
+#    - name: Login to Velux jFrog
+#      run: |
+#        docker login velux.jfrog.io --username ${{ secrets.JFROG_DOCKER_USER }} --password ${{  secrets.JFROG_DOCKER_PASSWORD }}
+    
+#    - name: Build MSSQL-INIT Docker image
+#      run: |
+#        docker build . --file docker/build/mssql-init/Dockerfile `
+#          --tag ${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ secrets.SITECORE_VERSION }} `
+#          --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-xm1-mssql-init:${{ vars.SITECORE_VERSION }} `
+#          --build-arg HEADLESS_SERVICES_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-headless-services-xm1-assets:${{ vars.HEADLESS_SERVICES_VERSION }} `
+#          --build-arg SPE_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-spe-assets:${{ vars.SPE_VERSION }}
+#        docker push ${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }}
+          
+#    - name: Build NODE.JS Docker image
+#      run: |
+#        docker build . --file docker/build/nodejs/Dockerfile `
+#          --tag ${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }} `
+#          --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}nanoserver:1809 `
+#          --build-arg NODEJS_VERSION=${{ vars.NODEJS_VERSION }}
+#        docker push ${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }}
+
+ 
+#  build-and-push-helm-package:
+#    uses: ./.github/workflows/_build-and-push-helm-package.yml
+#    needs: [build]
+#    secrets: inherit
+#    with:
+#      helm_repo_upload_url: ${{needs.build.outputs.helm_repo_upload_url}}
+#      chart_path: Helm/sitecore-init
+      
+#  sitecore-init:
+#    uses: ./.github/workflows/_deploy-helm-package.yml
+#    needs: [build, build-and-push-helm-package]
+#    secrets: 
+#      K8S_SHARED_DEV_DEPLOY: ${{ secrets.K8S_SHARED_DEV_DEPLOY }}
+#      RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+#      CLUSTERNAME: ${{ secrets.CLUSTERNAME }}
+#      SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+#      JFROG_HELM_USERNAME: ${{ secrets.JFROG_HELM_USER }}
+#      JFROG_HELM_PASSWORD: ${{ secrets.JFROG_HELM_PASSWORD }}
+#    with: 
+#      helm_repo: ${{needs.build.outputs.helm_repo}}
+#      args: -f ./sitecore-init/values.yaml -f ./sitecore-init/values-aks-${{ inputs.environment }}.yaml --set init-mssql.image.tag=${{ vars.SITECORE_VERSION }}
+#     chart_name: sitecore-init
+#      environment: ${{ inputs.environment }}
+#     namespace: sitecore
+      

@@ -1,0 +1,97 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "init-solr.fullname" . }}
+  labels:
+    app: {{ include "init-solr.fullname" . }}
+    {{- include "init-solr.labels" . | nindent 4 }}
+spec:
+  template:    
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SQL_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Sitecore_Database_Admin_Password
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: DB_NAME_POSTFIX
+              value: {{ .Values.databaseNamePostfix }}
+            - name: SITECORE_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-security
+                  key: SITECORE_ADMIN_PASSWORD
+            - name: SQL_ADMIN_LOGIN
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Sitecore_Database_Admin_Username
+            - name: SQL_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Database_Server
+            - name: SQL_ELASTIC_POOL_NAME
+              value: ""
+            - name: Master_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Master_Database_Username
+            - name: Master_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Master_Database_Password
+            - name: Core_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Core_Database_Username
+            - name: Core_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Core_Database_Password
+            - name: Web_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Web_Database_Username
+            - name: Web_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Web_Database_Password
+            - name: Forms_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Forms_Database_Username
+            - name: Forms_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Forms_Database_Password
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      restartPolicy: Never
+      tolerations:
+      - key: "workload"
+        value: "win"
+        effect: "NoSchedule"
+  backoffLimit: 5

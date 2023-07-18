@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: scr.sitecore.com/sxp/sitecore-xm1-mssql-init
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "10.2-ltsc2019"
+
+databaseNamePostfix: ""
+
+imagePullSecrets: 
+  - name: regcred-dev
+
+nameOverride: ""
+fullnameOverride: "sitecore-init-mssql"
+
+
+nodeSelector:
+        kubernetes.io/os: windows
+
+resources:
+  requests:
+    memory: 500Mi
+    cpu: "50m"
+  limits:
+    memory: 500Mi

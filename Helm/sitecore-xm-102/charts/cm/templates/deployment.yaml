@@ -1,0 +1,221 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cm.fullname" . }}
+  labels:    
+    {{- include "cm.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: {{ .Values.strategy.type }}
+  selector:
+    matchLabels:
+      app: {{ include "cm.fullname" . }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "cm.fullname" . }}
+        {{- include "cm.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            allowPrivilegeEscalation: false
+            runAsGroup: 3000
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: Sitecore_InstanceName
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: Database_Server
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Database_Server
+            - name: Database_Name_Postfix
+              value: {{ .Values.global.databaseNamePostfix }}
+            - name: Master_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Master_Database_Username
+            - name: Master_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Master_Database_Password
+            - name: Core_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Core_Database_Username
+            - name: Core_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Core_Database_Password
+            - name: Web_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Web_Database_Username
+            - name: Web_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Web_Database_Password
+            - name: Forms_Database_Username
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: Forms_Database_Username
+            - name: Forms_Database_Password
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-database
+                  key: Forms_Database_Password
+            - name: Sitecore_ConnectionStrings_Sitecoreidentity.secret
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-identity
+                  key: Sitecore_ConnectionStrings_Sitecoreidentity_Secret
+            - name: Sitecore_AppSettings_Telerik.AsyncUpload.ConfigurationEncryptionKey
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-telerik
+                  key: Sitecore_Telerik_Encryption_Key
+            - name: Sitecore_AppSettings_Telerik.Upload.ConfigurationHashKey
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-telerik
+                  key: Sitecore_Telerik_Encryption_Key
+            - name: Sitecore_AppSettings_Telerik.Web.UI.DialogParametersEncryptionKey
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-telerik
+                  key: Sitecore_Telerik_Encryption_Key
+            - name: Sitecore_License
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-license
+                  key: Sitecore_License
+            - name: Sitecore_ConnectionStrings_Core
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core$(Database_Name_Postfix);User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
+            - name: Sitecore_ConnectionStrings_Security
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core$(Database_Name_Postfix);User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
+            - name: Sitecore_ConnectionStrings_Master
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Master$(Database_Name_Postfix);User ID=$(Master_Database_Username);Password=$(Master_Database_Password);
+            - name: Sitecore_ConnectionStrings_Web
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Web$(Database_Name_Postfix);User ID=$(Web_Database_Username);Password=$(Web_Database_Password);
+            - name: Sitecore_ConnectionStrings_ExperienceForms
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.ExperienceForms$(Database_Name_Postfix);User ID=$(Forms_Database_Username);Password=$(Forms_Database_Password);
+            - name: Sitecore_ConnectionStrings_Solr.Search
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-solr
+                  key: Sitecore_ConnectionStrings_Solr
+            {{- with (first .Values.global.id.ingress.hosts) }}
+            - name: Sitecore_Identity_Server_Authority
+              value: {{ printf "https://%s" .host }}
+            {{- end }}
+            {{- with (first .Values.global.cm.ingress.hosts) }}
+            - name: Sitecore_Identity_Server_CallbackAuthority
+              value: {{ printf "https://%s" .host }}
+            {{- end }}
+            - name: Sitecore_Identity_Server_InternalAuthority
+              value: http://{{ .Values.global.id.internalName }}
+            - name: Sitecore_Identity_Server_Require_Https
+              value: "false"
+            - name: SOLR_CORE_PREFIX_NAME
+              value: {{ .Values.global.solrCorePrefixName }}
+            - name: MEDIA_REQUEST_PROTECTION_SHARED_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-security
+                  key: MEDIA_REQUEST_PROTECTION_SHARED_SECRET
+            - name: SITECORE_DEVELOPMENT_PATCHES
+              valueFrom:
+                configMapKeyRef:
+                  name: velux-config-env-file
+                  key: SITECORE_DEVELOPMENT_PATCHES
+          livenessProbe:
+            httpGet:
+              path: /healthz/live
+              port: 80
+              httpHeaders:
+              - name: X-Kubernetes-Probe
+                value: Liveness
+            timeoutSeconds: 300
+            periodSeconds: 30
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 80
+              httpHeaders:
+              - name: X-Kubernetes-Probe
+                value: Startup
+            timeoutSeconds: 300
+            periodSeconds: 30
+            failureThreshold: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        - name: {{ .Values.sidecar.name }}
+          image: "{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.sidecar.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            allowPrivilegeEscalation: false
+            runAsGroup: 3000
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          env:
+            - name: CM_HOST
+              value: {{ printf "http://%s%s" .Values.global.cm.internalName "/healthz/ready" }}
+            - name: ID_HOST
+              value: {{ printf "http://%s" .Values.global.id.internalName }}
+            - name: ID_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-security
+                  key: SITECORE_IDENTITY_CLIENT_SECRET
+            - name: ID_CLIENT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-security
+                  key: SITECORE_IDENTITY_CLIENT_NAME
+            - name: NUGET_SOURCE
+              value: {{ .Values.sidecar.nugetSource }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      tolerations:
+      - key: "workload"
+        value: "win"
+        effect: "NoSchedule"

@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rendering.fullname" . }}
+  labels:    
+    {{- include "rendering.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: {{ .Values.strategy.type }}
+  selector:
+    matchLabels:
+      app: {{ include "rendering.fullname" . }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ include "rendering.fullname" . }}
+        {{- include "rendering.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            allowPrivilegeEscalation: false
+            runAsGroup: 3000
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+          - name: VITE_SITECORE_API_HOST
+            value: {{ printf "http://%s" .Values.global.cm.internalName }}
+          - name: VITE_FETCH_WITH
+            value: {{ .Values.settings.fetchMode }}
+          - name: VITE_DEFAULT_LANGUAGE
+            value: {{ .Values.settings.defaultLanguage }}
+          - name: VITE_VITE_JSS_MODE
+            value: connected
+          - name: VITE_SERVER_PORT
+            value: '80'  
+          - name: VITE_JSS_EDITING_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: sitecore-security
+                key: SITECORE_JSS_EDITING_SECRET
+          - name: VITE_SITECORE_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: sitecore-security
+                key: SITECORE_JSS_API_KEY
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      tolerations:
+      - key: "workload"
+        value: "win"
+        effect: "NoSchedule"

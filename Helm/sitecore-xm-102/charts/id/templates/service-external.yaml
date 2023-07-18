@@ -1,0 +1,12 @@
+{{- $fullName := include "id.fullname" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-%s" $fullName "external" }}
+  labels:
+    {{- include "id.labels" . | nindent 4 }}
+spec:
+  type: ExternalName
+  externalName: {{ printf "%s.%s" $fullName "sitecore.svc.cluster.local" }}
+  ports:
+    - port: {{ .Values.service.port }}

@@ -1,0 +1,81 @@
+name: _build-and-push-helm-package
+
+# Controls when the workflow will run
+on:
+  workflow_call:
+    inputs:
+      tag_version:
+        required: true
+        type: string
+      chart_path:
+        required: true
+        type: string
+      helm_repo_upload_url:
+        required: true
+        type: string
+      working-directory:
+          required: false
+          type: string
+          default: '.'
+        
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    
+      - uses: actions/checkout@v3
+
+      - name: Helm tool installer
+        uses: Azure/setup-helm@v3.3
+        with:
+          version: 3.9.0
+      
+      - run: |
+          echo "Get repo url"          
+          echo ${{ inputs.helm_repo_upload_url }}
+          echo "Get repo chart path"
+          echo ${{ inputs.chart_path }}
+          
+      - name: Set tags
+        shell: pwsh
+        run: |
+          (Get-Content ${{ inputs.working-directory }}/${{ inputs.chart_path }}/values.yaml) -replace '{TAG}', '${{ inputs.tag_version }}' | Set-Content -Path ${{ inputs.working-directory }}/${{ inputs.chart_path }}/values.yaml -Force
+      
+      - run: |
+          echo "linting chart"          
+          helm lint ${{ inputs.working-directory }}/${{ inputs.chart_path }}
+          echo "packaging chart"
+          helm package ${{ inputs.working-directory }}/${{ inputs.chart_path }} --app-version ${{ inputs.tag_version }} --version ${{ inputs.tag_version }}   
+      
+#      - name: Set tags
+#        shell: pwsh
+#        run: |
+#          Import-Module powershell-yaml
+#          $currentPath = (Get-Location).Path
+#          $documentWithVariables = Get-Content -Path $currentPath\values.yaml -Raw | ConvertFrom-Yaml 
+#          $psDoc = [PSCustomObject]$documentWithVariables
+#          $psDoc.cd.image.tag = "1.1.1"
+#          ConvertTo-Yaml $psDoc -OutFile $currentPath\values.yaml -Force
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v2.3.0
+
+      - name: Upload Helm Chart
+        run: |
+          echo "push to jfrog"
+          PACKAGENAME=$(ls *.tgz | head)
+          jfrog rt u "$PACKAGENAME" "wdd/sitecore/$PACKAGENAME" --url ${{ inputs.helm_repo_upload_url }} --access-token ${{ secrets.JFROG_HELM_PASSWORD }} --user ${{ secrets.JFROG_HELM_USER }}
+        env:
+          TOKEN: ${{ secrets.JFROG_HELM_PASSWORD }}
+          USERNAME: ${{ secrets.JFROG_HELM_USER }}
+
+

@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "init-solr.fullname" . }}
+  labels:
+    app: {{ include "init-solr.fullname" . }}
+    {{- include "init-solr.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ include "init-solr.fullname" . }}
+        {{- include "init-solr.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SITECORE_SOLR_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: sitecore-solr
+                  key: Sitecore_ConnectionStrings_Solr
+            - name: SOLR_CORE_PREFIX_NAME
+              value: {{ .Values.solrCorePrefixName }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      restartPolicy: Never
+      tolerations:
+      - key: "workload"
+        value: "win"
+        effect: "NoSchedule"
+  backoffLimit: 5

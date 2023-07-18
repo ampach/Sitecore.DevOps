@@ -1,0 +1,57 @@
+# This is a basic workflow to help you get started with Actions
+
+name: _bump-release-version
+
+# Controls when the workflow will run
+on:
+  workflow_call: 
+    outputs:
+      build_tag:
+        description: "The new release version"
+        value: ${{ jobs.bump-version.outputs.build_tag }}
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
+jobs:
+  # This workflow contains a single job called "build"
+  bump-version:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      - name: Taking the Latest Release Tag number
+        id: releaseVersion
+        run: |
+          owner="${{ github.repository_owner }}"
+          repo="${{ github.event.repository.name }}"
+          release_json=$(gh api -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" /repos/$owner/$repo/releases/latest)
+          Release_tag=$(echo "$release_json" | jq -r '.tag_name')
+          echo "Release_tag: Latest Tag is : $Release_tag"
+          echo "Release_tag=$Release_tag" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            
+      - name: Bumping release version 
+        id: bump_release_version
+        shell: pwsh
+        run: |
+          $version = New-Object System.Version("${{ steps.releaseVersion.outputs.Release_tag }}")
+          $newVersion = ""
+          
+          $comment = "${{ github.event.head_commit.message }}"
+          
+          if ($comment -match  "major") { 
+            $newVersion = "{0}.{1}.{2}" -f ($version.Major + 1), 0, 0
+          } elseif ($comment -match  "minor") {
+            $newVersion = "{0}.{1}.{2}" -f $version.Major, ($version.Minor + 1), 0
+          } else {
+            $newVersion = "{0}.{1}.{2}" -f $version.Major, $version.Minor, ($version.Build + 1)
+          }          
+          "new_release_tag=$newVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          write-host "The new release version is $newVersion"      
+          
+    outputs:
+      build_tag: ${{ steps.bump_release_version.outputs.new_release_tag }}

@@ -1,0 +1,101 @@
+name: _deploy-helm-package
+
+# Controls when the workflow will run
+on:
+  workflow_call:
+    inputs:
+      helm_repo:
+        required: true
+        type: string
+        
+      args:
+        required: true
+        type: string
+        
+      chart_name:
+        required: true
+        type: string
+        
+      environment:
+        required: true
+        type: string
+        default: 'dev'
+          
+      namespace:
+        required: true
+        type: string
+        default: sitecore
+        
+      working-directory:
+          required: false
+          type: string
+          default: '.'
+        
+    secrets:
+      K8S_SHARED_DEV_DEPLOY:
+        required: true
+      RESOURCE_GROUP:
+        required: true
+      CLUSTERNAME:
+        required: true
+      SUBSCRIPTION_ID:
+        required: true
+      JFROG_HELM_USERNAME:
+        required: true
+      JFROG_HELM_PASSWORD:
+        required: true
+      
+      
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    environment: ${{ inputs.environment }}
+    
+    steps:
+    
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Azure Login
+        uses: Azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.K8S_SHARED_DEV_DEPLOY }}
+
+      - name: Azure Kubernetes set context
+        uses: Azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.CLUSTERNAME }}
+          subscription: ${{ secrets.SUBSCRIPTION_ID }}
+          admin: true
+      
+      - name: Helm tool installer
+        uses: Azure/setup-helm@v3.3
+        with:
+          version: 3.9.0
+
+      - name: Add Velux Helm repository
+        shell: pwsh
+        run: |
+          helm repo add velux ${{ inputs.helm_repo }} --username ${{ secrets.JFROG_HELM_USERNAME }} --password ${{ secrets.JFROG_HELM_PASSWORD }}
+          helm repo update velux
+          
+      - name: Deploy Helm Navigator chart
+        shell: bash
+        run: |
+          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} -f ${{ inputs.working-directory }}/Helm/navigator/values.yaml -f ${{ inputs.working-directory }}/Helm/navigator/values-aks-${{ inputs.environment }}.yaml navigator velux/navigator
+      
+      - name: Deploy ${{ inputs.chart_name }} chart 
+        shell: bash
+        run: |
+          helm pull velux/${{ inputs.chart_name }} --untar
+          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} velux/${{ inputs.chart_name }}
