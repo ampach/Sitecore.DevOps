@@ -26,10 +26,7 @@ jobs:
           inlineScript: |
             set -eu
             agentIP=$(curl -s https://api.ipify.org/)
-            az keyvault network-rule add \
-              --name "${{ secrets.AZURE_KV_NAME }}" \
-              --resource-group "${{ secrets.RESOURCE_GROUP }}" \              
-              --ip-address $agentIP
+            az keyvault network-rule add --name "${{ secrets.AZURE_KV_NAME }}" --resource-group "${{ secrets.RESOURCE_GROUP }}" --ip-address $agentIP
             sleep 300
       
       
@@ -64,10 +61,7 @@ jobs:
           inlineScript: |
             set -eu
             agentIP=$(curl -s https://api.ipify.org/)
-            az keyvault network-rule remove  \
-              --resource-group "${{ secrets.RESOURCE_GROUP }}" \
-              --name "${{ secrets.AZURE_KV_NAME }}" \
-              --ip-address $agentIP
+            az keyvault network-rule remove --resource-group "${{ secrets.RESOURCE_GROUP }}" --name "${{ secrets.AZURE_KV_NAME }}" --ip-address $agentIP
 
       - name: logout
         if: always()
