@@ -19,7 +19,20 @@ jobs:
         uses: azure/login@v1.4.6
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
+      
+      - name: Whitelist GitHub Runner IP
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            set -eu
+            agentIP=$(curl -s https://api.ipify.org/)
+            az keyvault network-rule add \
+              --name "${{ secrets.AZURE_KV_NAME }}" \
+              --resource-group "${{ secrets.RESOURCE_GROUP }}" \              
+              --ip-address $agentIP
+            sleep 300
+      
+      
       - name: Add Secrets
         shell: bash
         run: |
@@ -43,3 +56,20 @@ jobs:
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-license" --value ""
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-telerik-encryptionkey" --value "cT}an$E!Q\\\\+f?1UjAXZl/U*C|d3&c^5E40{C|RwE]~RBQiTf]Ibzo4)DAjn&l9KPNV`4s{^!Z{}-aG><POX/c`[DYvwruywPx{I|{pZf8o+{Qah_{rCUU08S(dYcbUt"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "web-database-password" --value "D6Vcp1p2H3^q"
+          
+      - name: Remove GitHub Runner IP from Whitelist
+        if: always()
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            set -eu
+            agentIP=$(curl -s https://api.ipify.org/)
+            az keyvault network-rule remove  \
+              --resource-group "${{ secrets.RESOURCE_GROUP }}" \
+              --name "${{ secrets.AZURE_KV_NAME }}" \
+              --ip-address $agentIP
+
+      - name: logout
+        if: always()
+        run: |
+          az logout
