@@ -27,7 +27,7 @@ jobs:
             set -eu
             agentIP=$(curl -s https://api.ipify.org/)
             az keyvault network-rule add --name "${{ secrets.AZURE_KV_NAME }}" --resource-group "${{ secrets.RESOURCE_GROUP }}" --ip-address $agentIP
-            sleep 300
+            sleep 60
       
       
       - name: Add Secrets
