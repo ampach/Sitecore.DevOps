@@ -46,7 +46,6 @@ cm:
     repository: scr.sitecore.com/sxp/sitecore-xm1-cm
     tag: "{TAG}"
   sidecar:
-    nugetSource: https://sitecore.myget.org/F/sc-packages/api/v3/index.json
     image:
       repository: velux.jfrog.io/docker-dev/wdd/sitecore/velux-shops-item-sync
       tag: "{TAG}"
@@ -113,10 +112,8 @@ global:
   licenseFileSecretName: license.xml
   sqlSaPassword:
   telerikEncryptionKey:
-  databaseNamePostfix:
   solrCorePrefixName:
-  VELUXlabels:
-    business-owner: ewa.heunicke
-    technical-owner: tamara.al-amad
+  metaLabels:
+    business-owner: artsem.prashkovich
+    technical-owner: artsem.prashkovich
     priority: medium
-    veluxwbs: NotApplicable

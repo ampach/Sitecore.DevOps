@@ -13,7 +13,6 @@ fullnameOverride: "sitecore-cm"
 
 sidecar:
   name: sitecore-item-sync
-  nugetSource: https://sitecore.myget.org/F/sc-packages/api/v3/index.json
   image:
     repository: scr.sitecore.com/sxp/sitecore-xm1-cm
     pullPolicy: IfNotPresent

@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "id.name" -}}
+{{- define "sitecore-init.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "id.fullname" -}}
+{{- define "sitecore-init.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "id.chart" -}}
+{{- define "sitecore-init.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "id.labels" -}}
-helm.sh/chart: {{ include "id.chart" . }}
-{{ include "id.selectorLabels" . }}
+{{- define "sitecore-init.labels" -}}
+helm.sh/chart: {{ include "sitecore-init.chart" . }}
+{{ include "sitecore-init.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,20 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "id.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "id.fullname" . }}
+{{- define "sitecore-init.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "sitecore-init.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- range $key, $val := .Values.global.metaLabels }}
-{{ $key }}: {{ $val | quote }}
-{{- end }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "id.serviceAccountName" -}}
+{{- define "sitecore-init.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "id.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "sitecore-init.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

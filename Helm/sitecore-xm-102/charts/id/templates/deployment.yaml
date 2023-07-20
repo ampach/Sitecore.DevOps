@@ -53,8 +53,6 @@ spec:
                 secretKeyRef:
                   name: sitecore-database
                   key: Database_Server
-            - name: Database_Name_Postfix
-              value: {{ .Values.global.databaseNamePostfix }}
             - name: Core_Database_Username
               valueFrom:
                 configMapKeyRef:
@@ -86,7 +84,7 @@ spec:
                   name: sitecore-license
                   key: Sitecore_License
             - name: Sitecore_Sitecore__IdentityServer__SitecoreMemberShipOptions__ConnectionString
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core$(Database_Name_Postfix);User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core;User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
             {{- with (first .Values.global.cm.ingress.hosts) }}
             - name: Sitecore_Sitecore__IdentityServer__AccountOptions__PasswordRecoveryUrl
               value: {{ printf "https://%s/sitecore/login?rc=1" .host }}

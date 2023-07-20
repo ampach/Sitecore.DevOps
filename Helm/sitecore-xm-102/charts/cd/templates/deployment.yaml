@@ -57,8 +57,6 @@ spec:
                 secretKeyRef:
                   name: sitecore-database
                   key: Database_Server
-            - name: Database_Name_Postfix
-              value: {{ .Values.global.databaseNamePostfix }}
             - name: Core_Database_Username
               valueFrom:
                 configMapKeyRef:
@@ -95,11 +93,11 @@ spec:
                   name: sitecore-license
                   key: Sitecore_License
             - name: Sitecore_ConnectionStrings_Security
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core$(Database_Name_Postfix);User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core;User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
             - name: Sitecore_ConnectionStrings_Web
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Web$(Database_Name_Postfix);User ID=$(Web_Database_Username);Password=$(Web_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Web;User ID=$(Web_Database_Username);Password=$(Web_Database_Password);
             - name: Sitecore_ConnectionStrings_ExperienceForms
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.ExperienceForms$(Database_Name_Postfix);User ID=$(Forms_Database_Username);Password=$(Forms_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.ExperienceForms;User ID=$(Forms_Database_Username);Password=$(Forms_Database_Password);
             - name: Sitecore_ConnectionStrings_Solr.Search
               valueFrom:
                 secretKeyRef:

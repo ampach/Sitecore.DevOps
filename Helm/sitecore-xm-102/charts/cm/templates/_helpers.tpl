@@ -48,7 +48,7 @@ Selector labels
 {{- define "cm.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "cm.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- range $key, $val := .Values.global.VELUXlabels }}
+{{- range $key, $val := .Values.global.metaLabels }}
 {{ $key }}: {{ $val | quote }}
 {{- end }}
 {{- end }}

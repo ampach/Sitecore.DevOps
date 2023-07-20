@@ -57,12 +57,10 @@ spec:
                 secretKeyRef:
                   name: sitecore-database
                   key: Database_Server
-            - name: Database_Name_Postfix
-              value: {{ .Values.global.databaseNamePostfix }}
             - name: Master_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Master_Database_Username
             - name: Master_Database_Password
               valueFrom:
@@ -72,7 +70,7 @@ spec:
             - name: Core_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Core_Database_Username
             - name: Core_Database_Password
               valueFrom:
@@ -82,7 +80,7 @@ spec:
             - name: Web_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Web_Database_Username
             - name: Web_Database_Password
               valueFrom:
@@ -92,7 +90,7 @@ spec:
             - name: Forms_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Forms_Database_Username
             - name: Forms_Database_Password
               valueFrom:
@@ -125,15 +123,15 @@ spec:
                   name: sitecore-license
                   key: Sitecore_License
             - name: Sitecore_ConnectionStrings_Core
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core$(Database_Name_Postfix);User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core;User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
             - name: Sitecore_ConnectionStrings_Security
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core$(Database_Name_Postfix);User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Core;User ID=$(Core_Database_Username);Password=$(Core_Database_Password);
             - name: Sitecore_ConnectionStrings_Master
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Master$(Database_Name_Postfix);User ID=$(Master_Database_Username);Password=$(Master_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Master;User ID=$(Master_Database_Username);Password=$(Master_Database_Password);
             - name: Sitecore_ConnectionStrings_Web
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Web$(Database_Name_Postfix);User ID=$(Web_Database_Username);Password=$(Web_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.Web;User ID=$(Web_Database_Username);Password=$(Web_Database_Password);
             - name: Sitecore_ConnectionStrings_ExperienceForms
-              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.ExperienceForms$(Database_Name_Postfix);User ID=$(Forms_Database_Username);Password=$(Forms_Database_Password);
+              value: Data Source=$(Database_Server);Initial Catalog=Sitecore.ExperienceForms;User ID=$(Forms_Database_Username);Password=$(Forms_Database_Password);
             - name: Sitecore_ConnectionStrings_Solr.Search
               valueFrom:
                 secretKeyRef:
@@ -161,7 +159,7 @@ spec:
             - name: SITECORE_DEVELOPMENT_PATCHES
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: SITECORE_DEVELOPMENT_PATCHES
           livenessProbe:
             httpGet:
@@ -211,8 +209,6 @@ spec:
                 secretKeyRef:
                   name: sitecore-security
                   key: SITECORE_IDENTITY_CLIENT_NAME
-            - name: NUGET_SOURCE
-              value: {{ .Values.sidecar.nugetSource }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       tolerations:

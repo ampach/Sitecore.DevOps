@@ -28,8 +28,6 @@ spec:
                   key: Sitecore_Database_Admin_Password
             - name: ACCEPT_EULA
               value: "Y"
-            - name: DB_NAME_POSTFIX
-              value: {{ .Values.databaseNamePostfix }}
             - name: SITECORE_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:

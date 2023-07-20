@@ -6,8 +6,6 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "10.2-ltsc2019"
 
-databaseNamePostfix: ""
-
 imagePullSecrets: 
   - name: regcred-dev
 
