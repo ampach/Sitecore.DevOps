@@ -1,0 +1,17 @@
+name: Setup Azure Dependencies
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Logs in with your Azure credentials
+      - name: Azure login
+        uses: azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
