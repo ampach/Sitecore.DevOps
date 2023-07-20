@@ -1,11 +1,17 @@
 name: Setup Azure Dependencies
 
 on:  
-  workflow_dispatch: {}
+  workflow_dispatch: 
+    inputs:
+      environment:
+        description: 'Environment to run build and deploy against'
+        type: environment
+        required: true 
 
 jobs:
 
   deploy:
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
       # Logs in with your Azure credentials
@@ -13,3 +19,27 @@ jobs:
         uses: azure/login@v1.4.6
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Add Secrets
+        shell: bash
+        run: |
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "core-database-password" --value "ZpU$6v70AuVY"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "database-server" --value "."
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "forms-database-password" --value "Ka6F04M571#j"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "identity-certificate-password" --value "4!33E7XtQWxx"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "identity-certificate-string" --value "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"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "master-database-password" --value "yU12&2WVt#43"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "media-request-protection-shared-secret" --value "LeJG\\UfY`yhxp7=F{+LxFh&uby>XY;C;wbKcC.NO2$MDj@D#g3$S9@t/x~2<tpm!"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-admin-password" --value "b"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-connectionstrings-redis" --value ""
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-connectionstrings-solr" --value "https://localhost:1434/solr;solrCloud=true"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-database-admin-password" --value "SQLadmin@123!@#"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-database-admin-username" --value "sa"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-identity-client-name" --value "cli-client"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-identity-client-secret" --value "260KF99A3F9C30498DEA074C117DAFB8"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-identity-secret" --value "zwbgxISZnBrFK32xUXOv5yiDFdabaHTEzByujTD4cw5ZeiLcWh3QogesQeqCTGCR"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-jss-api-key" --value "35537F26-6B0A-4A4F-8B76-02D823E4A4FE"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-jss-editing-secret" --value "JzQb6bhTA5dSv2IoSIu6jCUIVc8bSAy34sOVwgofhaFpjGK4otzkEsQzplEen3XB"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-license" --value ""
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-telerik-encryptionkey" --value "cT}an$E!Q\\\\+f?1UjAXZl/U*C|d3&c^5E40{C|RwE]~RBQiTf]Ibzo4)DAjn&l9KPNV`4s{^!Z{}-aG><POX/c`[DYvwruywPx{I|{pZf8o+{Qah_{rCUU08S(dYcbUt"
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "web-database-password" --value "D6Vcp1p2H3^q"
