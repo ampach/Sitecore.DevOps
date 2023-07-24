@@ -41,7 +41,7 @@ jobs:
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "master-database-password" --value "yU12&2WVt#43"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "media-request-protection-shared-secret" --value "zwbgxISZnBrFK32xjfdh878fgdsjhfTD4cw5ZeiLcWh3QogesQeqCTGCR"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-admin-password" --value "b"
-          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-connectionstrings-redis" --value ""
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-connectionstrings-redis" --value "NA"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-connectionstrings-solr" --value "https://localhost:1434/solr;solrCloud=true"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-database-admin-password" --value "SQLadmin@123!@#"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-database-admin-username" --value "sa"
@@ -50,7 +50,7 @@ jobs:
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-identity-secret" --value "zwbgxISZnBrFK32xUXOv5yiDFdabaHTEzByujTD4cw5ZeiLcWh3QogesQeqCTGCR"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-jss-api-key" --value "35537F26-6B0A-4A4F-8B76-02D823E4A4FE"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-jss-editing-secret" --value "JzQb6bhTA5dSv2IoSIu6jCUIVc8bSAy34sOVwgofhaFpjGK4otzkEsQzplEen3XB"
-          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-license" --value ""
+          az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-license" --value "NA"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "sitecore-telerik-encryptionkey" --value "MIIKqQIBAzCCCmUGCSqGSIb3DQEHAaCCClYEggpSMIIKTjCCBg8GCSqGSIb3DQEHAaCCBgAEggX8MIIF+DCCBfQGCyqGSIb3DQEMCgECoIIE/jCCBPowHAYKKoZIhvcNAQwBAzAO"
           az keyvault secret set --vault-name ${{ secrets.AZURE_KV_NAME }} --name "web-database-password" --value "D6Vcp1p2H3^q"
           
