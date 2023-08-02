@@ -4,7 +4,11 @@ name: _deploy-helm-package
 on:
   workflow_call:
     inputs:
-      helm_repo:
+      helm_repo_url:
+        required: true
+        type: string      
+      
+      helm_repo_name:
         required: true
         type: string
         
@@ -83,19 +87,14 @@ jobs:
         with:
           version: 3.9.0
 
-      - name: Add Velux Helm repository
+      - name: Add Helm repository
         shell: pwsh
         run: |
-          helm repo add velux ${{ inputs.helm_repo }} --username ${{ secrets.JFROG_HELM_USERNAME }} --password ${{ secrets.JFROG_HELM_PASSWORD }}
-          helm repo update velux
-          
-      - name: Deploy Helm Navigator chart
-        shell: bash
-        run: |
-          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} -f ${{ inputs.working-directory }}/Helm/navigator/values.yaml -f ${{ inputs.working-directory }}/Helm/navigator/values-aks-${{ inputs.environment }}.yaml navigator velux/navigator
+          helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.JFROG_HELM_USERNAME }} --password ${{ secrets.JFROG_HELM_PASSWORD }}
+          helm repo update ${{ inputs.helm_repo_name }}
       
       - name: Deploy ${{ inputs.chart_name }} chart 
         shell: bash
         run: |
-          helm pull velux/${{ inputs.chart_name }} --untar
-          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} velux/${{ inputs.chart_name }}
+          helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
+          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}

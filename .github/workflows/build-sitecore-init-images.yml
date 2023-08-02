@@ -24,35 +24,35 @@ jobs:
         shell: bash
         id: env_vars
         run: |
-          echo "helm_repo_upload_url=${{ vars.VELUX_HELM_REPO_UPLOAD_URL }}" >> $GITHUB_OUTPUT
-          echo "helm_repo=${{ vars.VELUX_HELM_REPO_URL }}" >> $GITHUB_OUTPUT    
+          echo "helm_repo_upload_url=${{ vars.HELM_REPO_UPLOAD_URL }}" >> $GITHUB_OUTPUT
+          echo "helm_repo=${{ vars.HELM_REPO_URL }}" >> $GITHUB_OUTPUT    
       
-      - name: Login to Velux jFrog
+      - name: Login to jFrog
         run: |
-          docker login velux.jfrog.io --username ${{ secrets.JFROG_DOCKER_USER }} --password ${{  secrets.JFROG_DOCKER_PASSWORD }}
+          docker login xxx.jfrog.io --username ${{ secrets.JFROG_DOCKER_USER }} --password ${{  secrets.JFROG_DOCKER_PASSWORD }}
 
       - name: Build MSSQL-INIT Docker image
         run: |
           docker build ./docker/build/mssql-init `
             --tag ${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }} `
-            --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-xm1-mssql-init:${{ vars.SITECORE_VERSION }} `
-            --build-arg HEADLESS_SERVICES_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-headless-services-xm1-assets:${{ vars.HEADLESS_SERVICES_VERSION }} `
-            --build-arg SPE_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}sitecore-spe-assets:${{ vars.SPE_VERSION }}
+            --build-arg PARENT_IMAGE=${{ vars.DOCKER_CONTAINER_REGESRTY }}sitecore-xm1-mssql-init:${{ vars.SITECORE_VERSION }} `
+            --build-arg HEADLESS_SERVICES_IMAGE=${{ vars.DOCKER_CONTAINER_REGESRTY }}sitecore-headless-services-xm1-assets:${{ vars.HEADLESS_SERVICES_VERSION }} `
+            --build-arg SPE_IMAGE=${{ vars.DOCKER_CONTAINER_REGESRTY }}sitecore-spe-assets:${{ vars.SPE_VERSION }}
           
-          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }} ` ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }}
-          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }} ` ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:latest          
-          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }} ` ${{ vars.DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }} ` ${{ vars.DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:latest          
+          docker push ${{ vars.DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-xm1-mssql-init:${{ vars.SITECORE_VERSION }}
 
       - name: Build NODE.JS Docker image
         run: |
           docker build . --file docker/build/nodejs/Dockerfile `
             --tag ${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }} `
-            --build-arg PARENT_IMAGE=${{ vars.VELUX_DOCKER_CONTAINER_REGESRTY }}servercore:1809 `
+            --build-arg PARENT_IMAGE=${{ vars.DOCKER_CONTAINER_REGESRTY }}servercore:1809 `
             --build-arg NODEJS_VERSION=${{ vars.NODEJS_VERSION }}
           
-          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }} ` ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }}
-          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }} ` ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:latest    
-          docker push ${{ vars.VELUX_DOCKER_LOCAL_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }} ` ${{ vars.DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }}
+          docker tag ${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }} ` ${{ vars.DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:latest    
+          docker push ${{ vars.DOCKER_CONTAINER_REGESRTY }}${{ vars.COMPOSE_PROJECT_NAME }}-nodejs:${{ vars.NODEJS_VERSION }}
         
     outputs:
       helm_repo: ${{ steps.env_vars.outputs.helm_repo }}

@@ -60,7 +60,7 @@ spec:
             - name: Core_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Core_Database_Username
             - name: Core_Database_Password
               valueFrom:
@@ -70,7 +70,7 @@ spec:
             - name: Web_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Web_Database_Username
             - name: Web_Database_Password
               valueFrom:
@@ -80,7 +80,7 @@ spec:
             - name: Forms_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Forms_Database_Username
             - name: Forms_Database_Password
               valueFrom:

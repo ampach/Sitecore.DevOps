@@ -48,7 +48,7 @@ Selector labels
 {{- define "init-solr.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "init-solr.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- range $key, $val := .Values.global.VELUXlabels }}
+{{- range $key, $val := .Values.global.commonLabels }}
 {{ $key }}: {{ $val | quote }}
 {{- end }}
 {{- end }}

@@ -27,16 +27,10 @@ ARG DEVOPS_USERNAME
 ARG DEVOPS_PASSWORD
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-# install VELUX middlware Certificates
-COPY velux-certs/ ./velux-certs/
-RUN Import-Certificate -FilePath .\velux-certs\VELUX-Root-CA.cer -CertStoreLocation Cert:\\LocalMachine\Root\
-RUN Import-Certificate -FilePath .\velux-certs\VELUX-Root-256-CA.der -CertStoreLocation Cert:\\LocalMachine\Root\
 
 WORKDIR /build
 #Copy the nuget.config separately, and add the private feeds
 COPY ./server/nuget.config ./
-RUN dotnet nuget update source 'Velux jFrog' --username $env:JFROG_USERNAME --password $env:JFROG_PASSWORD --configfile ./nuget.config
-RUN dotnet nuget update source 'Velux Devops' --username $env:DEVOPS_USERNAME --password $env:DEVOPS_PASSWORD --configfile ./nuget.config
 
 # Copy prepped NuGet artifacts, and restore as distinct layer to take advantage of caching.
 COPY --from=nuget-prep ./nuget ./

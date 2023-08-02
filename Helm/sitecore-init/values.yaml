@@ -18,8 +18,7 @@ init-solr:
   solrCorePrefixName: sitecore
 
 global:
-  VELUXlabels:
-    business-owner: ewa.heunicke
-    technical-owner: tamara.al-amad
+  commonLabels:
+    business-owner: artsem.prashkovich
+    technical-owner: artsem.prashkovich
     priority: medium
-    veluxwbs: NotApplicable

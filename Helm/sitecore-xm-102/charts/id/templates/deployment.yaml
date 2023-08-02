@@ -56,7 +56,7 @@ spec:
             - name: Core_Database_Username
               valueFrom:
                 configMapKeyRef:
-                  name: velux-config-env-file
+                  name: global-config-env-file
                   key: Core_Database_Username
             - name: Core_Database_Password
               valueFrom:

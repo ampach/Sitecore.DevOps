@@ -26,7 +26,7 @@ rendering:
   strategy:
     type: Recreate
   image:
-    repository: scr.sitecore.com/sxp/rendering
+    repository: ghcr.io/ampach/sitecore/sitecore-xm1-rendering
     tag: "{TAG}"
   env:
   nodeSelector:
@@ -47,7 +47,7 @@ cm:
     tag: "{TAG}"
   sidecar:
     image:
-      repository: velux.jfrog.io/docker-dev/wdd/sitecore/velux-shops-item-sync
+      repository: ghcr.io/ampach/sitecore/sitecore-xm1-cm-items-sync
       tag: "{TAG}"
   env:
   nodeSelector:
