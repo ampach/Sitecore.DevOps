@@ -1,4 +1,4 @@
-name: Setup Helm Charts
+name: Init Sitecore
 
 on:  
   workflow_dispatch: 
