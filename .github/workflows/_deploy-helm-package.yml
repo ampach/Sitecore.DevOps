@@ -88,6 +88,12 @@ jobs:
           version: 3.9.0
 
       - name: Add Helm repository
+        shell: pwsh
+        run: | 
+          write-host ${{ github.event.inputs.helm_repo_name }}
+          write-host ${{ github.event.inputs.helm_repo_url }}
+          
+      - name: Add Helm repository
         if: github.event.inputs.helm_repo_name != '' && github.event.inputs.helm_repo_url != ''
         shell: pwsh
         run: |
