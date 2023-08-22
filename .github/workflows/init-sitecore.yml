@@ -10,31 +10,10 @@ on:
 
 jobs:
 
-  start:
-    environment: ${{ inputs.environment }}
-    runs-on: ubuntu-latest
-    steps:
-      # Logs in with your Azure credentials
-      - name: Azure login
-        uses: azure/login@v1.4.6
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      - name: Whitelist GitHub Runner IP
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            set -eu
-            agentIP=$(curl -s https://api.ipify.org/)
-            az keyvault network-rule add --name "${{ secrets.AZURE_KV_NAME }}" --resource-group "${{ secrets.RESOURCE_GROUP }}" --ip-address $agentIP
-            sleep 60
-
-
   cluster-init:    
     uses: ./.github/workflows/_deploy-helm-package.yml
-    needs: [start]
     secrets: 
-      K8S_SHARED_DEV_DEPLOY: ${{ secrets.AZURE_CREDENTIALS }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
       CLUSTER_NAME: ${{ secrets.CLUSTERNAME }}
       SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
@@ -47,21 +26,3 @@ jobs:
       chart_name: sitecore-init2
       environment: ${{ inputs.environment }}
       namespace: sitecore
-
-  finish:
-    environment: ${{ inputs.environment }}
-    runs-on: ubuntu-latest
-    steps:  
-      - name: Remove GitHub Runner IP from Whitelist
-        if: always()
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            set -eu
-            agentIP=$(curl -s https://api.ipify.org/)
-            az keyvault network-rule remove --resource-group "${{ secrets.RESOURCE_GROUP }}" --name "${{ secrets.AZURE_KV_NAME }}" --ip-address $agentIP
-
-      - name: logout
-        if: always()
-        run: |
-          az logout
