@@ -6,6 +6,8 @@ init-mssql:
         kubernetes.io/os: windows
   imagePullSecrets: 
     - name: regcred-dev
+  sqlDatabasePrefix: sitecore
+  sqlCustomDatabasePrefixUpdateFrom:
 
 init-solr:
   image:

@@ -2,5 +2,8 @@ dependencies:
 - name: csi-secrets-store-provider-azure
   repository: https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
   version: 1.4.3
-digest: sha256:d569cae7f1e90c473e49b4cfbea4328689d97f28244cde84d5da38ddc19a4dbc
-generated: "2023-07-19T20:06:31.2336373+02:00"
+- name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx
+  version: 4.7.1
+digest: sha256:9c34611acfba24e997d9fc634a73b8cedaf4054ad1b78e230b6ee7aa9929402f
+generated: "2023-08-22T13:43:49.1278621+02:00"

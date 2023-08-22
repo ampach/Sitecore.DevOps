@@ -28,7 +28,7 @@ spec:
                   key: Sitecore_Database_Admin_Password
             - name: ACCEPT_EULA
               value: "Y"
-            - name: SITECORE_ADMIN_PASSWORD
+            - name: sitecore_admin_password
               valueFrom:
                 secretKeyRef:
                   name: sitecore-security
@@ -85,11 +85,19 @@ spec:
                 secretKeyRef:
                   name: sitecore-database
                   key: Forms_Database_Password
+            - name: Sql_Database_Prefix
+              value: {{ .Values.image.sqlDatabasePrefix }}
+            - name: Sql_Custom_Database_Prefix_Update_From
+              value: {{ .Values.image.sqlCustomDatabasePrefixUpdateFrom }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       restartPolicy: Never
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
-      - key: "workload"
-        value: "win"
-        effect: "NoSchedule"
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   backoffLimit: 5

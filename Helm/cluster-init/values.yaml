@@ -1,5 +1,11 @@
+envNamespace: default
+
 csi-secrets-store-provider-azure:
+  enabled: true
   secrets-store-csi-driver:    
     enableSecretRotation: true
     syncSecret:
       enabled: true
+
+ingress-nginx:
+  enabled: true

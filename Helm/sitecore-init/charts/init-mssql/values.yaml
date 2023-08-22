@@ -7,14 +7,14 @@ image:
   tag: "10.2-ltsc2019"
 
 imagePullSecrets: 
-  - name: regcred-dev
+  - name: sitecore-docker-registry
 
 nameOverride: ""
 fullnameOverride: "sitecore-init-mssql"
 
 
 nodeSelector:
-        kubernetes.io/os: windows
+  kubernetes.io/os: windows
 
 resources:
   requests:
@@ -22,3 +22,7 @@ resources:
     cpu: "50m"
   limits:
     memory: 500Mi
+
+tolerations: []
+
+affinity: {}
