@@ -41,7 +41,8 @@ jobs:
       HELM_USERNAME: "user_test"
       HELM_PASSWORD: "password_test"
     with: 
-      helm_repo: http://test.cor
+      helm_repo_url: http://test.cor
+      helm_repo_name: workflow
       args: -f ./sitecore-init/values.yaml -f ./sitecore-init/values-aks-${{ inputs.environment }}.yaml --set init-mssql.image.tag=${{ vars.SITECORE_VERSION }}
       chart_name: sitecore-init2
       environment: ${{ inputs.environment }}

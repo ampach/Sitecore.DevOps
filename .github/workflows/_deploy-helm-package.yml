@@ -40,7 +40,7 @@ on:
         required: true
       RESOURCE_GROUP:
         required: true
-      CLUSTERNAME:
+      CLUSTER_NAME:
         required: true
       SUBSCRIPTION_ID:
         required: true
@@ -78,7 +78,7 @@ jobs:
         uses: Azure/aks-set-context@v3
         with:
           resource-group: ${{ secrets.RESOURCE_GROUP }}
-          cluster-name: ${{ secrets.CLUSTERNAME }}
+          cluster-name: ${{ secrets.CLUSTER_NAME }}
           subscription: ${{ secrets.SUBSCRIPTION_ID }}
           admin: true
       
