@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  deploy:
+  start:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
@@ -29,25 +29,28 @@ jobs:
             az keyvault network-rule add --name "${{ secrets.AZURE_KV_NAME }}" --resource-group "${{ secrets.RESOURCE_GROUP }}" --ip-address $agentIP
             sleep 60
 
-      - name: Helm tool installer
-        uses: Azure/setup-helm@v3.3
-        with:
-          version: 3.9.0
 
-      - name: Azure Kubernetes set context
-        uses: Azure/aks-set-context@v3
-        with:
-          resource-group: ${{ secrets.RESOURCE_GROUP }}
-          cluster-name: ${{ secrets.CLUSTER_NAME }}
-          subscription: ${{ secrets.SUBSCRIPTION_ID }}
-          admin: true
-      
-      
-      - name: Add Secrets
-        shell: bash
-        run: |
-          $clusterRG = az aks show --resource-group ${{ secrets.RESOURCE_GROUP }} --name ${{ secrets.CLUSTER_NAME }} --query nodeResourceGroup -o tsv
-          
+  cluster-init:    
+    uses: ./.github/workflows/helpers/_deploy-helm-package.yml
+    needs: [start]
+    secrets: 
+      K8S_SHARED_DEV_DEPLOY: ${{ secrets.AZURE_CREDENTIALS }}
+      RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+      CLUSTER_NAME: ${{ secrets.CLUSTERNAME }}
+      SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+      HELM_USERNAME: "user_test"
+      HELM_PASSWORD: "password_test"
+    with: 
+      helm_repo: http://test.cor
+      args: -f ./sitecore-init/values.yaml -f ./sitecore-init/values-aks-${{ inputs.environment }}.yaml --set init-mssql.image.tag=${{ vars.SITECORE_VERSION }}
+      chart_name: sitecore-init2
+      environment: ${{ inputs.environment }}
+      namespace: sitecore
+
+  finish:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:  
       - name: Remove GitHub Runner IP from Whitelist
         if: always()
         uses: azure/CLI@v1
