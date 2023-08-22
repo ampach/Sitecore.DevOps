@@ -91,8 +91,8 @@ jobs:
         shell: pwsh
         run: |
           $params = @('${{ inputs.helm_repo_name }}', '${{ inputs.helm_repo_url }}')
-          $HELM_USERNAME = ${{ secrets.HELM_USERNAME }}
-          $HELM_PASSWORD = ${{ secrets.HELM_PASSWORD }}
+          $HELM_USERNAME = "${{ secrets.HELM_USERNAME }}"
+          $HELM_PASSWORD = "${{ secrets.HELM_PASSWORD }}"
           
           if($HELM_USERNAME) {$params = $params + '--username=$HELM_USERNAME'}
           if($HELM_PASSWORD) {$params = $params + '--username=$HELM_PASSWORD'}
