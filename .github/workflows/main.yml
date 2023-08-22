@@ -1,0 +1,63 @@
+name: Setup Helm Charts
+
+on:  
+  workflow_dispatch: 
+    inputs:
+      environment:
+        description: 'Environment to run build and deploy against'
+        type: environment
+        required: true 
+
+jobs:
+
+  deploy:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      # Logs in with your Azure credentials
+      - name: Azure login
+        uses: azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Whitelist GitHub Runner IP
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            set -eu
+            agentIP=$(curl -s https://api.ipify.org/)
+            az keyvault network-rule add --name "${{ secrets.AZURE_KV_NAME }}" --resource-group "${{ secrets.RESOURCE_GROUP }}" --ip-address $agentIP
+            sleep 60
+
+      - name: Helm tool installer
+        uses: Azure/setup-helm@v3.3
+        with:
+          version: 3.9.0
+
+      - name: Azure Kubernetes set context
+        uses: Azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.CLUSTER_NAME }}
+          subscription: ${{ secrets.SUBSCRIPTION_ID }}
+          admin: true
+      
+      
+      - name: Add Secrets
+        shell: bash
+        run: |
+          $clusterRG = az aks show --resource-group ${{ secrets.RESOURCE_GROUP }} --name ${{ secrets.CLUSTER_NAME }} --query nodeResourceGroup -o tsv
+          
+      - name: Remove GitHub Runner IP from Whitelist
+        if: always()
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            set -eu
+            agentIP=$(curl -s https://api.ipify.org/)
+            az keyvault network-rule remove --resource-group "${{ secrets.RESOURCE_GROUP }}" --name "${{ secrets.AZURE_KV_NAME }}" --ip-address $agentIP
+
+      - name: logout
+        if: always()
+        run: |
+          az logout
