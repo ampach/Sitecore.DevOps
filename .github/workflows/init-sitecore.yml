@@ -31,7 +31,7 @@ jobs:
 
 
   cluster-init:    
-    uses: ./.github/workflows/helpers/_deploy-helm-package.yml
+    uses: ./.github/workflows/_deploy-helm-package.yml
     needs: [start]
     secrets: 
       K8S_SHARED_DEV_DEPLOY: ${{ secrets.AZURE_CREDENTIALS }}
