@@ -5,12 +5,12 @@ on:
   workflow_call:
     inputs:
       helm_repo_url:
-        required: true
+        required: false
         type: string      
       
       helm_repo_name:
-        required: true
-        type: string
+        required: false
+        type: string        
         
       args:
         required: true
@@ -44,10 +44,10 @@ on:
         required: true
       SUBSCRIPTION_ID:
         required: true
-      JFROG_HELM_USERNAME:
-        required: true
-      JFROG_HELM_PASSWORD:
-        required: true
+      HELM_USERNAME:
+        required: false
+      HELM_PASSWORD:
+        required: false
       
       
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -88,13 +88,19 @@ jobs:
           version: 3.9.0
 
       - name: Add Helm repository
+        if: github.event.inputs.helm_repo_name != '' && github.event.inputs.helm_repo_url != ''
         shell: pwsh
         run: |
-          helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.JFROG_HELM_USERNAME }} --password ${{ secrets.JFROG_HELM_PASSWORD }}
-          helm repo update ${{ inputs.helm_repo_name }}
+          $params = @('${{ inputs.helm_repo_name }}', '${{ inputs.helm_repo_url }}')
+          if(-ne ${{ secrets.HELM_USERNAME }}) {$params = $params + '--username=${{ secrets.HELM_USERNAME }}'}
+          if(-ne ${{ secrets.HELM_PASSWORD }}) {$params = $params + '--username=${{ secrets.HELM_PASSWORD }}'}
+          #helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.HELM_USERNAME }} --password ${{ secrets.HELM_PASSWORD }}
+          write-host $params
+          helm repo add @params
+          #helm repo update ${{ inputs.helm_repo_name }}
       
-      - name: Deploy ${{ inputs.chart_name }} chart 
-        shell: bash
-        run: |
-          helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
-          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}
+      #- name: Deploy ${{ inputs.chart_name }} chart 
+      #  shell: bash
+      #  run: |
+      #    helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
+      #    helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}
