@@ -91,8 +91,8 @@ jobs:
         shell: pwsh
         run: |
           $params = @('${{ inputs.helm_repo_name }}', '${{ inputs.helm_repo_url }}')
-          if(-ne ${{ secrets.HELM_USERNAME }}) {$params = $params + '--username=${{ secrets.HELM_USERNAME }}'}
-          if(-ne ${{ secrets.HELM_PASSWORD }}) {$params = $params + '--username=${{ secrets.HELM_PASSWORD }}'}
+          if(${{ secrets.HELM_USERNAME }}) {$params = $params + '--username=${{ secrets.HELM_USERNAME }}'}
+          if(${{ secrets.HELM_PASSWORD }}) {$params = $params + '--username=${{ secrets.HELM_PASSWORD }}'}
           #helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.HELM_USERNAME }} --password ${{ secrets.HELM_PASSWORD }}
           write-host $params
           helm repo add @params
