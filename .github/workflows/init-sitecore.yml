@@ -17,8 +17,6 @@ jobs:
       RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
       CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
       SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
-      HELM_USERNAME: "user_test"
-      HELM_PASSWORD: "password_test"
     with: 
       helm_repo_url: http://test.cor
       helm_repo_name: workflow
