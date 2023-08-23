@@ -90,16 +90,16 @@ jobs:
       - name: Add Helm repository
         shell: pwsh
         run: |
-          $params = @('${{ inputs.helm_repo_name }}', '${{ inputs.helm_repo_url }}')
+          $params = @()
           $HELM_USERNAME = "${{ secrets.HELM_USERNAME }}"
           $HELM_PASSWORD = "${{ secrets.HELM_PASSWORD }}"
           
-          if($HELM_USERNAME) {$params = $params + '--username=' + $HELM_USERNAME}
-          if($HELM_PASSWORD) {$params = $params + '--username=' + $HELM_PASSWORD}
+          if($HELM_USERNAME) {$params = $params + "--username=$HELM_USERNAME"}
+          if($HELM_PASSWORD) {$params = $params + "--username=$HELM_PASSWORD"}
           
           #helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.HELM_USERNAME }} --password ${{ secrets.HELM_PASSWORD }}
           write-host $params
-          helm repo add @params
+          helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} @params
           #helm repo update ${{ inputs.helm_repo_name }}
       
       #- name: Deploy ${{ inputs.chart_name }} chart 
