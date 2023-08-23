@@ -63,7 +63,7 @@ jobs:
     with:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
-      args: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}}
+      args: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}} --set keyvault.clientID=${{secrets.USER_ASSIGNED_CLIENT_ID}} --set keyvault.keyvaultName=${{secrets.AZURE_KV_NAME}}  --set keyvault.tenantId=${{secrets.AZURE_KV_TENANT_ID}}
       chart_name: cluster-init
       namespace: kube-system
       environment: ${{ inputs.environment }}
