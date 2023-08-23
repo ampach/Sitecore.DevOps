@@ -95,7 +95,7 @@ jobs:
           $HELM_PASSWORD = "${{ secrets.HELM_PASSWORD }}"
           
           if($HELM_USERNAME) {$params = $params + "--username=$HELM_USERNAME"}
-          if($HELM_PASSWORD) {$params = $params + "--username=$HELM_PASSWORD"}
+          if($HELM_PASSWORD) {$params = $params + "--password=$HELM_PASSWORD"}
           
           #helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.HELM_USERNAME }} --password ${{ secrets.HELM_PASSWORD }}
           write-host $params
