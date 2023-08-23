@@ -17,10 +17,10 @@ jobs:
         shell: bash
         id: env-secrets
         run: |
-          echo "AZURE_KV_NAME=${{ vars.AZURE_KV_NAME }}" >> $GITHUB_OUTPUT
-          echo "RESOURCE_GROUP=${{ vars.RESOURCE_GROUP }}" >> $GITHUB_OUTPUT
-          echo "CLUSTER_NAME=${{ vars.CLUSTER_NAME }}" >> $GITHUB_OUTPUT
-          echo "SUBSCRIPTION_ID=${{ vars.SUBSCRIPTION_ID }}" >> $GITHUB_OUTPUT
+          echo "AZURE_KV_NAME=${{ secrets.AZURE_KV_NAME }}" >> $GITHUB_OUTPUT
+          echo "RESOURCE_GROUP=${{ secrets.RESOURCE_GROUP }}" >> $GITHUB_OUTPUT
+          echo "CLUSTER_NAME=${{ secrets.CLUSTER_NAME }}" >> $GITHUB_OUTPUT
+          echo "SUBSCRIPTION_ID=${{ secrets.SUBSCRIPTION_ID }}" >> $GITHUB_OUTPUT
 
     outputs:
       AZURE_KV_NAME: ${{ steps.env-secrets.outputs.AZURE_KV_NAME }}
