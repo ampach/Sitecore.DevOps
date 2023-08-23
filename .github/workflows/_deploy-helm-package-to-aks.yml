@@ -111,7 +111,7 @@ jobs:
       - name: Deploy ${{ inputs.chart_name }} chart 
         shell: bash
         run: |
-          #helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
+          helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
           helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}      
       
       - name: logout
