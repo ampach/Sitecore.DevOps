@@ -9,28 +9,26 @@ on:
         required: true 
 
 jobs:
-  secrets:
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
-    steps:
-      - name: Get Environment Specific Secrets
-        shell: bash
-        id: env-secrets
-        run: |
-          echo "AZURE_KV_NAME=${{ secrets.AZURE_KV_NAME }}" >> $GITHUB_OUTPUT
-          echo "RESOURCE_GROUP=${{ secrets.RESOURCE_GROUP }}" >> $GITHUB_OUTPUT
-          echo "CLUSTER_NAME=${{ secrets.CLUSTER_NAME }}" >> $GITHUB_OUTPUT
-          echo "SUBSCRIPTION_ID=${{ secrets.SUBSCRIPTION_ID }}" >> $GITHUB_OUTPUT
-
-    outputs:
-      AZURE_KV_NAME: ${{ steps.env-secrets.outputs.AZURE_KV_NAME }}
-      RESOURCE_GROUP: ${{ steps.env-secrets.outputs.RESOURCE_GROUP }}
-      CLUSTER_NAME: ${{ steps.env-secrets.outputs.CLUSTER_NAME }}
-      SUBSCRIPTION_ID: ${{ steps.env-secrets.outputs.SUBSCRIPTION_ID }}
+  #secrets:
+  #  runs-on: ubuntu-latest
+  #  environment: ${{ inputs.environment }}
+  #  steps:
+  #    - name: Get Environment Specific Secrets
+  #      shell: bash
+  #      id: env-secrets
+  #      run: |
+  #        echo "AZURE_KV_NAME=${{ secrets.AZURE_KV_NAME }}" >> $GITHUB_OUTPUT
+  #        echo "RESOURCE_GROUP=${{ secrets.RESOURCE_GROUP }}" >> $GITHUB_OUTPUT
+  #        echo "CLUSTER_NAME=${{ secrets.CLUSTER_NAME }}" >> $GITHUB_OUTPUT
+  #        echo "SUBSCRIPTION_ID=${{ secrets.SUBSCRIPTION_ID }}" >> $GITHUB_OUTPUT
+  #  outputs:
+  #    AZURE_KV_NAME: ${{ steps.env-secrets.outputs.AZURE_KV_NAME }}
+  #    RESOURCE_GROUP: ${{ steps.env-secrets.outputs.RESOURCE_GROUP }}
+  #    CLUSTER_NAME: ${{ steps.env-secrets.outputs.CLUSTER_NAME }}
+  #    SUBSCRIPTION_ID: ${{ steps.env-secrets.outputs.SUBSCRIPTION_ID }}
 
   setup-azure:
     runs-on: ubuntu-latest
-    needs: [secrets]
     environment: ${{ inputs.environment }}
     steps:    
       - name: Azure Login
@@ -42,11 +40,11 @@ jobs:
         id: add-static-ip
         shell: pwsh
         run: |
-          echo ${{needs.secrets.outputs.AZURE_KV_NAME}}
-          echo ${{needs.secrets.outputs.RESOURCE_GROUP}}
-          echo ${{needs.secrets.outputs.CLUSTER_NAME}}
-          echo ${{needs.secrets.outputs.SUBSCRIPTION_ID}}
-          $clusterRG = az aks show --resource-group ${{needs.secrets.outputs.RESOURCE_GROUP}} --name ${{needs.secrets.outputs.CLUSTER_NAME}} --query nodeResourceGroup -o tsv
+          echo ${{secrets.AZURE_KV_NAME}}
+          echo ${{secrets.RESOURCE_GROUP}}
+          echo ${{secrets.CLUSTER_NAME}}
+          echo ${{secrets.SUBSCRIPTION_ID}}
+          $clusterRG = az aks show --resource-group ${{secrets.RESOURCE_GROUP}} --name ${{secrets.CLUSTER_NAME}} --query nodeResourceGroup -o tsv
           $staticIpObject = az network public-ip create --resource-group $clusterRG --name ClusterStaticIP --sku Standard --allocation-method static | ConvertFrom-Json
           $staticIP = $staticIpObject.publicIp.ipAddress    
           "ip=$staticIP" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -55,16 +53,17 @@ jobs:
       staticIP: ${{ steps.add-static-ip.outputs.ip }}
   
   cluster-init:    
-    needs: [secrets, setup-azure]
+    needs: [setup-azure]
     uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      RESOURCE_GROUP: ${{needs.secrets.outputs.RESOURCE_GROUP}}
-      CLUSTER_NAME: ${{needs.secrets.outputs.CLUSTER_NAME}}
-      SUBSCRIPTION_ID: ${{needs.secrets.outputs.SUBSCRIPTION_ID}}
+      RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
+      CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
+      SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
     with:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
       args: -f ./cluster-init/values.yaml --set ingress-nginx.controller.service.loadBalancerIP= ${{needs.setup-azure.outputs.staticIP}}
       chart_name: cluster-init
       namespace: kube-system
+      environment: ${{ inputs.environment }}
