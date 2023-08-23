@@ -9,8 +9,30 @@ on:
         required: true 
 
 jobs:
+  setup-azure:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    steps:    
+      - name: Azure Login
+        uses: Azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Add Helm repository
+        id: add-static-ip
+        shell: pwsh
+        run: |
+          $clusterRG = az aks show --resource-group ${{ secrets.RESOURCE_GROUP }} --name ${{ secrets.CLUSTER_NAME }} --query nodeResourceGroup -o tsv
+          $staticIpObject = az network public-ip create --resource-group $clusterRG --name ClusterStaticIP --sku Standard --allocation-method static | ConvertFrom-Json
+          $staticIP = $staticIpObject.publicIp.ipAddress    
+          "ip=$staticIP" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+    outputs:
+      staticIP: ${{ steps.add-static-ip.outputs.ip }}
+  
   cluster-init:    
+    needs: [setup-azure]
     uses: ./.github/workflows/_deploy-helm-package.yml
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -18,7 +40,8 @@ jobs:
       CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
       SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
     with:
-      args: -f ./sitecore-init/values.yaml -f ./sitecore-init/values-aks-${{ inputs.environment }}.yaml --set init-mssql.image.tag=${{ vars.SITECORE_VERSION }}
-      chart_name: sitecore-init2
-      environment: ${{ inputs.environment }}
-      namespace: sitecore
+      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_name: ampach
+      args: -f ./cluster-init/values.yaml --set ingress-nginx.controller.service.loadBalancerIP= ${{needs.setup-azure.outputs.staticIP}}
+      chart_name: cluster-init
+      namespace: kube-system
