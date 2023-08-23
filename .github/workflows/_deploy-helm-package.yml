@@ -90,18 +90,27 @@ jobs:
       - name: Add Helm repository
         shell: pwsh
         run: |
-          $params = @()
-          $HELM_USERNAME = "${{ secrets.HELM_USERNAME }}"
-          $HELM_PASSWORD = "${{ secrets.HELM_PASSWORD }}"
+          $HELM_REPO_NAME = "${{ inputs.helm_repo_name }}"
+          $HELM_REPO_URL = "${{ inputs.helm_repo_url }}"
           
-          if($HELM_USERNAME) {$params = $params + "--username=$HELM_USERNAME"}
-          if($HELM_PASSWORD) {$params = $params + "--password=$HELM_PASSWORD"}
+          if($HELM_REPO_NAME -and  $HELM_REPO_URL){
           
-          #helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.HELM_USERNAME }} --password ${{ secrets.HELM_PASSWORD }}
-          write-host $params
-          helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} @params
-          #helm repo update ${{ inputs.helm_repo_name }}
-      
+            $params = @()
+            $HELM_USERNAME = "${{ secrets.HELM_USERNAME }}"
+            $HELM_PASSWORD = "${{ secrets.HELM_PASSWORD }}"
+            
+            if($HELM_USERNAME) {$params = $params + "--username=$HELM_USERNAME"}
+            if($HELM_PASSWORD) {$params = $params + "--password=$HELM_PASSWORD"}
+            
+            write-host $params
+            helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} @params
+            #helm repo update ${{ inputs.helm_repo_name }}
+          }
+          else
+          {
+              write-host "Add Helm repository step skipped because Repo Name and Repo URL is not set"
+          }
+          
       #- name: Deploy ${{ inputs.chart_name }} chart 
       #  shell: bash
       #  run: |
