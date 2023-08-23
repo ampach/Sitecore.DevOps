@@ -63,7 +63,7 @@ jobs:
     with:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
-      args: -f ./cluster-init/values.yaml --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}}
+      args: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}}
       chart_name: cluster-init
       namespace: kube-system
       environment: ${{ inputs.environment }}
