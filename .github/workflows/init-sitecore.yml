@@ -33,7 +33,7 @@ jobs:
   
   cluster-init:    
     needs: [setup-azure]
-    uses: ./.github/workflows/_deploy-helm-package.yml
+    uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
