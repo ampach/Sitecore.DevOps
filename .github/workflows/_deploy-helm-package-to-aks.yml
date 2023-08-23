@@ -1,4 +1,4 @@
-name: _deploy-helm-package
+name: _deploy-helm-package-to-aks
 
 # Controls when the workflow will run
 on:
@@ -19,11 +19,6 @@ on:
       chart_name:
         required: true
         type: string
-        
-      environment:
-        required: true
-        type: string
-        default: 'dev'
           
       namespace:
         required: true
@@ -61,8 +56,6 @@ jobs:
       run:
         working-directory: ${{ inputs.working-directory }}
 
-    environment: ${{ inputs.environment }}
-    
     steps:
     
       - uses: actions/checkout@v3
@@ -108,15 +101,14 @@ jobs:
           }
           else
           {
-              write-host "Add Helm repository step skipped because Repo Name and Repo URL is not set"
+              write-host "Add Helm repository step skipped because Repo Name and Repo URL are not set"
           }
           
-      #- name: Deploy ${{ inputs.chart_name }} chart 
-      #  shell: bash
-      #  run: |
-      #    helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
-      #    helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}
-      
+      - name: Deploy ${{ inputs.chart_name }} chart 
+        shell: bash
+        run: |
+          helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
+          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}      
       
       - name: logout
         if: always()
