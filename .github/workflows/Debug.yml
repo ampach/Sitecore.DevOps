@@ -48,7 +48,7 @@ jobs:
           write-host "KEYVAULT_SCOPE: $KEYVAULT_SCOPE"
 
           $USER_ASSIGNED_CLIENT_ID = "c9921374-9ad7-4405-9d4c-057aabdaf7da"
-          az keyvault role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_CLIENT_ID --scope $KEYVAULT_SCOPE
+          az role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_CLIENT_ID --scope $KEYVAULT_SCOPE
           
           write-host "Get the AKS cluster OIDC Issuer URL"
           $AKS_OIDC_ISSUER= az aks show --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --query "oidcIssuerProfile.issuerUrl" -o tsv
