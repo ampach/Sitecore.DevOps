@@ -41,6 +41,8 @@ jobs:
           $USER_ASSIGNED_PRINCIPAL_ID = az identity show -g ${{secrets.RESOURCE_GROUP}} --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --query 'principalId' -o tsv
           write-host "USER_ASSIGNED_CLIENT_ID: $USER_ASSIGNED_CLIENT_ID"
           write-host "USER_ASSIGNED_PRINCIPAL_ID: $USER_ASSIGNED_PRINCIPAL_ID"
+
+          "clientID=$USER_ASSIGNED_CLIENT_ID" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           
           $IDENTITY_TENANT = az aks show --name ${{secrets.CLUSTER_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --query identity.tenantId -o tsv
           write-host "IDENTITY_TENANT: $IDENTITY_TENANT"     
@@ -72,4 +74,5 @@ jobs:
               write-host "FEDERATED IDENTITY CREDENTIAL IS ALREADY ADDED"
           }      
           
-          
+    outputs:
+      staticIP: ${{ steps.add-identity.outputs.clientID }}      
