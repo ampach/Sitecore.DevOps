@@ -19,21 +19,85 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Add Helm repository
+      - name: Provide an identity to access the Azure Key Vault
+        id: add-identity
+        shell: pwsh
+        run: |          
+          write-host "Set subscription"          
+          az account set --subscription ${{secrets.SUBSCRIPTION_ID}}
+
+          $identity = az identity list --resource-group sitecore-apr_group --query "[?name=='${{secrets.USER_ASSIGNED_IDENTITY_NAME}}']" | ConvertFrom-Json
+          if($identity.length -eq 0){ 
+            write-host "Create a managed identity"        
+            az identity create --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}}            
+            Start-Sleep -s 60
+          }
+          else
+          {
+              write-host "PRINCIPAL IDENTITY WITH NAME "${{secrets.USER_ASSIGNED_IDENTITY_NAME}}" ALREADY EXISTS"
+          }
+
+          $USER_ASSIGNED_CLIENT_ID = az identity show -g ${{secrets.RESOURCE_GROUP}} --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --query 'clientId' -o tsv
+          $USER_ASSIGNED_PRINCIPAL_ID = az identity show -g ${{secrets.RESOURCE_GROUP}} --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --query 'principalId' -o tsv
+          write-host "USER_ASSIGNED_CLIENT_ID: $USER_ASSIGNED_CLIENT_ID"
+          write-host "USER_ASSIGNED_PRINCIPAL_ID: $USER_ASSIGNED_PRINCIPAL_ID"
+
+          "clientID=$USER_ASSIGNED_CLIENT_ID" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          
+          $IDENTITY_TENANT = az aks show --name ${{secrets.CLUSTER_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --query identity.tenantId -o tsv
+          write-host "IDENTITY_TENANT: $IDENTITY_TENANT"     
+
+          write-host "Create a role assignment that grants the workload identity permission to access the key vault secrets, access keys, and certificates"
+          $KEYVAULT_SCOPE = az keyvault show --name ${{secrets.AZURE_KV_NAME}} --query id -o tsv
+          write-host "KEYVAULT_SCOPE: $KEYVAULT_SCOPE"
+
+          $assignee = az role assignment list --scope $KEYVAULT_SCOPE --query "[?principalId=='$USER_ASSIGNED_PRINCIPAL_ID' && roleDefinitionName=='Key Vault Administrator']" | ConvertFrom-Json
+          if($assignee.length -eq 0){ 
+            az role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_PRINCIPAL_ID --scope $KEYVAULT_SCOPE
+          }
+          else
+          {
+              write-host "ROLE ASSIGNMENT IS ALREADY EXISTS"
+          }         
+          
+          write-host "Get the AKS cluster OIDC Issuer URL"
+          $AKS_OIDC_ISSUER= az aks show --resource-group ${{secrets.RESOURCE_GROUP}} --name ${{secrets.CLUSTER_NAME}} --query "oidcIssuerProfile.issuerUrl" -o tsv
+          echo "AKS_OIDC_ISSUER: $AKS_OIDC_ISSUER"
+
+          $federated_identity = az identity federated-credential list --identity-name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --query "[?name=='${{secrets.FEDERATED_IDENTITY_NAME}}']" | ConvertFrom-Json
+          if($federated_identity.length -eq 0){ 
+            write-host "Create the federated identity credential between the managed identity, service account issuer, and subject"
+            az identity federated-credential create --name ${{secrets.FEDERATED_IDENTITY_NAME}} --identity-name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --issuer $AKS_OIDC_ISSUER --subject system:serviceaccount:${{secrets.ENVIRONMENT_NAMESPACE}}:${{secrets.SERVICE_ACCOUNT_NAME}}
+          }
+          else
+          {
+              write-host "FEDERATED IDENTITY CREDENTIAL IS ALREADY ADDED"
+          }      
+      
+      - name: Add Static IP
         id: add-static-ip
         shell: pwsh
         run: |
-          echo ${{secrets.AZURE_KV_NAME}}
-          echo ${{secrets.RESOURCE_GROUP}}
-          echo ${{secrets.CLUSTER_NAME}}
-          echo ${{secrets.SUBSCRIPTION_ID}}
           $clusterRG = az aks show --resource-group ${{secrets.RESOURCE_GROUP}} --name ${{secrets.CLUSTER_NAME}} --query nodeResourceGroup -o tsv
-          $staticIpObject = az network public-ip create --resource-group $clusterRG --name ClusterStaticIP --sku Standard --allocation-method static | ConvertFrom-Json
-          $staticIP = $staticIpObject.publicIp.ipAddress    
+          
+          $publicIp = az network public-ip list -g $clusterRG --query "[?name=='ClusterStaticIP']" | ConvertFrom-Json
+          $staticIP = ""
+          if($publicIp.length -eq 0){ 
+            write-host "Create Static IP for cluster"        
+            $staticIpObject = az network public-ip create --resource-group $clusterRG --name ClusterStaticIP --sku Standard --allocation-method static | ConvertFrom-Json
+            $staticIP = $staticIpObject.publicIp.ipAddress
+          }
+          else
+          {
+              $staticIP = $publicIp.ipAddress
+              write-host "STATIC IP ALREADY EXISTS"              
+          }                
+          write-host "CLUSTER IP IS: $staticIP"                        
           "ip=$staticIP" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
     outputs:
       staticIP: ${{ steps.add-static-ip.outputs.ip }}
+      clientID: ${{ steps.add-identity.outputs.clientID }}
   
   cluster-init:    
     needs: [setup-azure]
@@ -43,7 +107,7 @@ jobs:
       RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
       CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
-      ARGS: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}} --set keyvault.clientID=${{secrets.USER_ASSIGNED_CLIENT_ID}} --set keyvault.keyvaultName=${{secrets.AZURE_KV_NAME}}  --set keyvault.tenantId=${{secrets.AZURE_KV_TENANT_ID}} --set keyvault.envNamespace=${{secrets.ENVIRONMENT_NAMESPACE}} --set keyvault.serviceAccpuntName=${{secrets.SERVICE_ACCOUNT_NAME}}
+      ARGS: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}} --set keyvault.clientID=${{needs.setup-azure.outputs.clientID}} --set keyvault.keyvaultName=${{secrets.AZURE_KV_NAME}}  --set keyvault.tenantId=${{secrets.AZURE_KV_TENANT_ID}} --set keyvault.envNamespace=${{secrets.ENVIRONMENT_NAMESPACE}} --set keyvault.serviceAccpuntName=${{secrets.SERVICE_ACCOUNT_NAME}}
     with:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
