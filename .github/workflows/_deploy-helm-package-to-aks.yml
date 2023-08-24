@@ -10,11 +10,7 @@ on:
       
       helm_repo_name:
         required: false
-        type: string        
-        
-      args:
-        required: true
-        type: string
+        type: string      
         
       chart_name:
         required: true
@@ -47,6 +43,8 @@ on:
         required: false
       HELM_PASSWORD:
         required: false
+      ARGS:
+        required: true
       
       
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -112,7 +110,7 @@ jobs:
         shell: bash
         run: |
           helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
-          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}      
+          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ secrets.ARGS }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}      
       
       - name: logout
         if: always()
