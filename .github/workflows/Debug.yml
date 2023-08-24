@@ -47,7 +47,7 @@ jobs:
           $KEYVAULT_SCOPE = az keyvault show --name ${{secrets.AZURE_KV_NAME}} --query id -o tsv
           write-host "KEYVAULT_SCOPE: $KEYVAULT_SCOPE"
 
-          $USER_ASSIGNED_CLIENT_ID = "2a4f434a-3f5a-48a5-9842-2da6d27a98e8"
+          $USER_ASSIGNED_CLIENT_ID = "c9921374-9ad7-4405-9d4c-057aabdaf7da"
           az keyvault role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_CLIENT_ID --scope $KEYVAULT_SCOPE --assignee-principal-type MSI
           
           write-host "Get the AKS cluster OIDC Issuer URL"
