@@ -9,23 +9,6 @@ on:
         required: true 
 
 jobs:
-  #secrets:
-  #  runs-on: ubuntu-latest
-  #  environment: ${{ inputs.environment }}
-  #  steps:
-  #    - name: Get Environment Specific Secrets
-  #      shell: bash
-  #      id: env-secrets
-  #      run: |
-  #        echo "AZURE_KV_NAME=${{ secrets.AZURE_KV_NAME }}" >> $GITHUB_OUTPUT
-  #        echo "RESOURCE_GROUP=${{ secrets.RESOURCE_GROUP }}" >> $GITHUB_OUTPUT
-  #        echo "CLUSTER_NAME=${{ secrets.CLUSTER_NAME }}" >> $GITHUB_OUTPUT
-  #        echo "SUBSCRIPTION_ID=${{ secrets.SUBSCRIPTION_ID }}" >> $GITHUB_OUTPUT
-  #  outputs:
-  #    AZURE_KV_NAME: ${{ steps.env-secrets.outputs.AZURE_KV_NAME }}
-  #    RESOURCE_GROUP: ${{ steps.env-secrets.outputs.RESOURCE_GROUP }}
-  #    CLUSTER_NAME: ${{ steps.env-secrets.outputs.CLUSTER_NAME }}
-  #    SUBSCRIPTION_ID: ${{ steps.env-secrets.outputs.SUBSCRIPTION_ID }}
 
   setup-azure:
     runs-on: ubuntu-latest
@@ -60,7 +43,7 @@ jobs:
       RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
       CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
-      ARGS: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}} --set keyvault.clientID=${{secrets.USER_ASSIGNED_CLIENT_ID}} --set keyvault.keyvaultName=${{secrets.AZURE_KV_NAME}}  --set keyvault.tenantId=${{secrets.AZURE_KV_TENANT_ID}}
+      ARGS: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}} --set keyvault.clientID=${{secrets.USER_ASSIGNED_CLIENT_ID}} --set keyvault.keyvaultName=${{secrets.AZURE_KV_NAME}}  --set keyvault.tenantId=${{secrets.AZURE_KV_TENANT_ID}} --set keyvault.envNamespace=${{secrets.ENVIRONMENT_NAMESPACE}} --set keyvault.serviceAccpuntName=${{secrets.SERVICE_ACCOUNT_NAME}}
     with:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
