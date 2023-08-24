@@ -1,0 +1,50 @@
+name: Init Sitecore
+
+on:  
+  workflow_dispatch: 
+    inputs:
+      environment:
+        description: 'Environment to run build and deploy against'
+        type: environment
+        required: true 
+
+jobs:
+
+  setup-azure:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:    
+      - name: Azure Login
+        uses: Azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Add Helm repository
+        id: add-static-ip
+        shell: pwsh
+        run: |
+          echo ${{secrets.AZURE_KV_NAME}}
+          echo ${{secrets.RESOURCE_GROUP}}
+          echo ${{secrets.CLUSTER_NAME}}
+          echo ${{secrets.SUBSCRIPTION_ID}}
+          echo ${{secrets.AZURE_KV_TENANT_ID}}
+          echo ${{secrets.USER_ASSIGNED_IDENTITY_NAME}}
+          
+          #Set subscription
+          az account set --subscription ${{secrets.SUBSCRIPTION_ID}}
+
+          #Create a managed identity
+          az identity create --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}}
+
+          $USER_ASSIGNED_CLIENT_ID = az identity show -g ${{secrets.RESOURCE_GROUP}} --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --query 'clientId' -o tsv
+          write-host $USER_ASSIGNED_CLIENT_ID
+          $IDENTITY_TENANT = az aks show --name ${{secrets.CLUSTER_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --query identity.tenantId -o tsv
+          write-host $IDENTITY_TENANT
+
+          #Create a role assignment that grants the workload identity permission to access the key vault secrets, access keys, and certificates
+          $KEYVAULT_SCOPE = az keyvault show --name ${{secrets.AZURE_KV_NAME}} --query id -o tsv
+          az role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_CLIENT_ID --scope $KEYVAULT_SCOPE
+
+          #Get the AKS cluster OIDC Issuer URL
+          $AKS_OIDC_ISSUER= az aks show --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --query "oidcIssuerProfile.issuerUrl" -o tsv
+          echo $AKS_OIDC_ISSUER
