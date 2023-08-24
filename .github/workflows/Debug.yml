@@ -44,7 +44,8 @@ jobs:
           write-host "IDENTITY_TENANT: $IDENTITY_TENANT"     
 
           write-host "Create a role assignment that grants the workload identity permission to access the key vault secrets, access keys, and certificates"
-          $KEYVAULT_SCOPE = az keyvault show --name ${{secrets.AZURE_KV_NAME}} --query id -o tsv
+          $KEYVAULT_SCOPE = az keyvault show --name ${{secrets.AZURE_KV_NAME}} --assignee-object-id  --assignee-principal-type --query id -o tsv
+          write-host "KEYVAULT_SCOPE: $KEYVAULT_SCOPE"
           az role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_CLIENT_ID --scope $KEYVAULT_SCOPE
 
           write-host "Get the AKS cluster OIDC Issuer URL"
