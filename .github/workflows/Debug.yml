@@ -33,21 +33,23 @@ jobs:
           write-host "Set subscription"          
           az account set --subscription ${{secrets.SUBSCRIPTION_ID}}
 
-          write-host "Create a managed identity"        
-          az identity create --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}}
+          #write-host "Create a managed identity"        
+          #az identity create --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}}
           
-          Start-Sleep -s 60
+          #Start-Sleep -s 60
 
-          $USER_ASSIGNED_CLIENT_ID = az identity show -g ${{secrets.RESOURCE_GROUP}} --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --query 'clientId' -o tsv
-          write-host "USER_ASSIGNED_CLIENT_ID: $USER_ASSIGNED_CLIENT_ID"     
-          $IDENTITY_TENANT = az aks show --name ${{secrets.CLUSTER_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --query identity.tenantId -o tsv
-          write-host "IDENTITY_TENANT: $IDENTITY_TENANT"     
+          #$USER_ASSIGNED_CLIENT_ID = az identity show -g ${{secrets.RESOURCE_GROUP}} --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --query 'clientId' -o tsv
+          #write-host "USER_ASSIGNED_CLIENT_ID: $USER_ASSIGNED_CLIENT_ID"     
+          #$IDENTITY_TENANT = az aks show --name ${{secrets.CLUSTER_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --query identity.tenantId -o tsv
+          #write-host "IDENTITY_TENANT: $IDENTITY_TENANT"     
 
           write-host "Create a role assignment that grants the workload identity permission to access the key vault secrets, access keys, and certificates"
           $KEYVAULT_SCOPE = az keyvault show --name ${{secrets.AZURE_KV_NAME}} --query id -o tsv
           write-host "KEYVAULT_SCOPE: $KEYVAULT_SCOPE"
-          az role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_CLIENT_ID --scope $KEYVAULT_SCOPE
 
+          $USER_ASSIGNED_CLIENT_ID = "2a4f434a-3f5a-48a5-9842-2da6d27a98e8"
+          az keyvault role assignment create --role "Key Vault Administrator" --assignee $USER_ASSIGNED_CLIENT_ID --scope $KEYVAULT_SCOPE --assignee-principal-type MSI
+          
           write-host "Get the AKS cluster OIDC Issuer URL"
           $AKS_OIDC_ISSUER= az aks show --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --query "oidcIssuerProfile.issuerUrl" -o tsv
           echo "AKS_OIDC_ISSUER: $AKS_OIDC_ISSUER"
