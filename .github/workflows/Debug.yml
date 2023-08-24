@@ -75,4 +75,4 @@ jobs:
           }      
           
     outputs:
-      staticIP: ${{ steps.add-identity.outputs.clientID }}      
+      clientID: ${{ steps.add-identity.outputs.clientID }}      
