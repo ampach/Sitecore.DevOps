@@ -98,6 +98,16 @@ jobs:
     outputs:
       staticIP: ${{ steps.add-static-ip.outputs.ip }}
       clientID: ${{ steps.add-identity.outputs.clientID }}
+
+  populate-sitecore-secrets:    
+    needs: [setup-azure]
+    uses: ./.github/workflows/_populate-sitecore-secrets.yml
+    secrets: 
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
+      AZURE_KV_NAME: ${{secrets.AZURE_KV_NAME}}
+    with:
+      environment: ${{ inputs.environment }}
   
   cluster-init:    
     needs: [setup-azure]
