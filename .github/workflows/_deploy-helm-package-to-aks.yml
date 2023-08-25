@@ -1,5 +1,3 @@
-name: _deploy-helm-package-to-aks
-
 # Controls when the workflow will run
 on:
   workflow_call:
