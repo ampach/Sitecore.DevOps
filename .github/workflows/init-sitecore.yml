@@ -3,6 +3,11 @@ name: Init Sitecore
 on:  
   workflow_dispatch: 
     inputs:
+      dev_dependencies:
+        description: 'Is setup DEV dependencies (mssql, solr, redis)'
+        required: true
+        type: boolean
+        default: false
       environment:
         description: 'Environment to run build and deploy against'
         type: environment
@@ -146,4 +151,20 @@ jobs:
       helm_repo_name: ampach
       chart_name: cluster-init
       namespace: kube-system
+      environment: ${{ inputs.environment }}
+
+  setup-dev-dependencies:
+    if:  ${{ inputs.dev_dependencies }} 
+    needs: [setup-azure, cluster-init]
+    uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
+    secrets: 
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
+      CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
+      SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
+    with:
+      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_name: ampach
+      chart_name: sitecore-dev
+      namespace: default
       environment: ${{ inputs.environment }}
