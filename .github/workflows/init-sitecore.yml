@@ -95,6 +95,18 @@ jobs:
           write-host "CLUSTER IP IS: $staticIP"                        
           "ip=$staticIP" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
+      - name: Add cluster subnet to the KV allowed networks
+        id: add-trusted-network
+        shell: pwsh
+        run: |
+          $clusterRG = az aks show --resource-group ${{secrets.RESOURCE_GROUP}} --name ${{secrets.CLUSTER_NAME}} --query nodeResourceGroup -o tsv
+          
+          $subnetId = az vmss list --resource-group $clusterRG --query "[0].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[0].ipConfigurations[0].subnet.id"
+          write-host "SUBNET ID: $subnetId" 
+
+          az keyvault network-rule add --name ${{secrets.AZURE_KV_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --subnet $subnetId          
+          
+
     outputs:
       staticIP: ${{ steps.add-static-ip.outputs.ip }}
       clientID: ${{ steps.add-identity.outputs.clientID }}
