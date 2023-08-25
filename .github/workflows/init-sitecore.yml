@@ -100,8 +100,17 @@ jobs:
         shell: pwsh
         run: |
           $clusterRG = az aks show --resource-group ${{secrets.RESOURCE_GROUP}} --name ${{secrets.CLUSTER_NAME}} --query nodeResourceGroup -o tsv
+
+          $vnetName = az network vnet list --resource-group ${{secrets.RESOURCE_GROUP}} --query "[0].name"
+          $subnetName = az network vnet subnet list --resource-group ${{secrets.RESOURCE_GROUP}} --vnet-name $vnetName --query "[0].name"
+
+          az network vnet subnet update --resource-group ${{secrets.RESOURCE_GROUP}} --vnet-name $vnetName --name $subnetName --service-endpoints "Microsoft.KeyVault"
+
+          #works for cluster which includes windows nodes
+          $subnetId = $(az network vnet subnet show --resource-group ${{secrets.RESOURCE_GROUP}} --vnet-name $vnetName --name $subnetName --query id --output tsv)
           
-          $subnetId = az vmss list --resource-group $clusterRG --query "[0].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[0].ipConfigurations[0].subnet.id"
+          #$subnetId = az vmss list --resource-group $clusterRG --query "[0].virtualMachineProfile.networkProfile.networkInterfaceConfigurations[0].ipConfigurations[0].subnet.id"
+          
           write-host "SUBNET ID: $subnetId" 
 
           az keyvault network-rule add --name ${{secrets.AZURE_KV_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}} --subnet $subnetId          
