@@ -1,5 +1,3 @@
-name: _deploy-helm-package
-
 # Controls when the workflow will run
 on:
   workflow_call:
@@ -10,20 +8,11 @@ on:
       
       helm_repo_name:
         required: false
-        type: string        
-        
-      args:
-        required: true
-        type: string
+        type: string      
         
       chart_name:
         required: true
         type: string
-        
-      environment:
-        required: true
-        type: string
-        default: 'dev'
           
       namespace:
         required: true
@@ -34,6 +23,10 @@ on:
           required: false
           type: string
           default: '.'
+
+      environment:
+        required: true
+        type: string
         
     secrets:
       AZURE_CREDENTIALS:
@@ -48,6 +41,8 @@ on:
         required: false
       HELM_PASSWORD:
         required: false
+      ARGS:
+        required: false
       
       
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -56,13 +51,11 @@ jobs:
   deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
+    environment: ${{ inputs.ENVIRONMENT }}
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
 
-    environment: ${{ inputs.environment }}
-    
     steps:
     
       - uses: actions/checkout@v3
@@ -86,25 +79,36 @@ jobs:
         uses: Azure/setup-helm@v3.3
         with:
           version: 3.9.0
-
+          
       - name: Add Helm repository
-        if: github.event.inputs.helm_repo_name != '' && github.event.inputs.helm_repo_url != ''
         shell: pwsh
         run: |
-          $params = @('${{ inputs.helm_repo_name }}', '${{ inputs.helm_repo_url }}')
-          if(-ne ${{ secrets.HELM_USERNAME }}) {$params = $params + '--username=${{ secrets.HELM_USERNAME }}'}
-          if(-ne ${{ secrets.HELM_PASSWORD }}) {$params = $params + '--username=${{ secrets.HELM_PASSWORD }}'}
-          #helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} --username ${{ secrets.HELM_USERNAME }} --password ${{ secrets.HELM_PASSWORD }}
-          write-host $params
-          helm repo add @params
-          #helm repo update ${{ inputs.helm_repo_name }}
-      
-      #- name: Deploy ${{ inputs.chart_name }} chart 
-      #  shell: bash
-      #  run: |
-      #    helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
-      #    helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ inputs.args }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}
-      
+          $HELM_REPO_NAME = "${{ inputs.helm_repo_name }}"
+          $HELM_REPO_URL = "${{ inputs.helm_repo_url }}"
+          
+          if($HELM_REPO_NAME -and  $HELM_REPO_URL){
+          
+            $params = @()
+            $HELM_USERNAME = "${{ secrets.HELM_USERNAME }}"
+            $HELM_PASSWORD = "${{ secrets.HELM_PASSWORD }}"
+            
+            if($HELM_USERNAME) {$params = $params + "--username=$HELM_USERNAME"}
+            if($HELM_PASSWORD) {$params = $params + "--password=$HELM_PASSWORD"}
+            
+            write-host $params
+            helm repo add ${{ inputs.helm_repo_name }} ${{ inputs.helm_repo_url }} @params
+            #helm repo update ${{ inputs.helm_repo_name }}
+          }
+          else
+          {
+              write-host "Add Helm repository step skipped because Repo Name and Repo URL are not set"
+          }
+          
+      - name: Deploy ${{ inputs.chart_name }} chart 
+        shell: bash
+        run: |
+          helm pull ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }} --untar
+          helm upgrade --install --atomic --timeout 10m0s -n ${{ inputs.namespace }} ${{ secrets.ARGS }} ${{ inputs.chart_name }} ${{ inputs.helm_repo_name }}/${{ inputs.chart_name }}      
       
       - name: logout
         if: always()
