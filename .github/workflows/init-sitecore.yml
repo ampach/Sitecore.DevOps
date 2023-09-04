@@ -168,3 +168,37 @@ jobs:
       chart_name: sitecore-dev
       namespace: default
       environment: ${{ inputs.environment }}
+
+  deploy-sitecore-init-images-dev:
+    if:  ${{ inputs.dev_dependencies }} 
+    needs: [setup-azure, cluster-init, setup-dev-dependencies]
+    uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
+    secrets: 
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
+      CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
+      SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
+      ARGS: -f .\sitecore-xm1-103-init\values.yaml -f .\sitecore-xm1-103-init\values-xm1.yaml
+    with:
+      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_name: ampach
+      chart_name: sitecore-xm1-103-init
+      namespace: default
+      environment: ${{ inputs.environment }}
+
+  deploy-sitecore-init-images:
+    if:  ${{ !inputs.dev_dependencies }} 
+    needs: [setup-azure, cluster-init]
+    uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
+    secrets: 
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
+      CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
+      SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
+      ARGS: -f .\sitecore-xm1-103-init\values.yaml -f .\sitecore-xm1-103-init\values-xm1.yaml
+    with:
+      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_name: ampach
+      chart_name: sitecore-xm1-103-init
+      namespace: default
+      environment: ${{ inputs.environment }}
