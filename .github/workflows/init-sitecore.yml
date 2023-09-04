@@ -178,7 +178,7 @@ jobs:
       RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
       CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
-      ARGS: -f .\sitecore-xm1-103-init\values.yaml -f .\sitecore-xm1-103-init\values-xm1.yaml
+      ARGS: -f ./sitecore-xm1-103-init/values.yaml -f ./sitecore-xm1-103-init/values-xm1.yaml
     with:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
@@ -195,7 +195,7 @@ jobs:
       RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
       CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
-      ARGS: -f .\sitecore-xm1-103-init\values.yaml -f .\sitecore-xm1-103-init\values-xm1.yaml
+      ARGS: -f ./sitecore-xm1-103-init/values.yaml -f ./sitecore-xm1-103-init/values-xm1.yaml
     with:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
