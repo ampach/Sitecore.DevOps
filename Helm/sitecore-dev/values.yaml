@@ -1,9 +1,0 @@
-mssql:
-  enabled: true
-solr:
-  enabled: true
-redis:
-  enabled: true
-  
-
-
