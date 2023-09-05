@@ -21,5 +21,5 @@ jobs:
       helm_repo_url: https://ampach.github.io/Helm-Charts
       helm_repo_name: ampach
       chart_name: sitecore-xm1-103
-      namespace: kube-system
+      namespace: default
       environment: ${{ inputs.environment }}
