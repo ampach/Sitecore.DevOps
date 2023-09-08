@@ -138,7 +138,7 @@ jobs:
       environment: ${{ inputs.environment }}
   
   cluster-init:    
-    needs: [setup-azure]
+    needs: [setup-azure, populate-sitecore-secrets]
     uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
