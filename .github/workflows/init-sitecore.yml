@@ -153,9 +153,25 @@ jobs:
       namespace: kube-system
       environment: ${{ inputs.environment }}
 
+  setup-cert-manager:    
+    needs: [setup-azure, populate-sitecore-secrets, cluster-init]
+    uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
+    secrets: 
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
+      CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
+      SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
+      ARGS:  --create-namespace
+    with:
+      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_name: ampach
+      chart_name: cert-manager
+      namespace: cert-manager
+      environment: ${{ inputs.environment }}
+
   setup-dev-dependencies:
     if:  ${{ inputs.dev_dependencies }} 
-    needs: [setup-azure, cluster-init]
+    needs: [setup-azure, setup-cert-manager]
     uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -171,7 +187,7 @@ jobs:
 
   deploy-sitecore-init-images-dev:
     if:  ${{ inputs.dev_dependencies }} 
-    needs: [setup-azure, cluster-init, setup-dev-dependencies]
+    needs: [setup-azure, setup-cert-manager, setup-dev-dependencies]
     uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -188,7 +204,7 @@ jobs:
 
   deploy-sitecore-init-images:
     if:  ${{ !inputs.dev_dependencies }} 
-    needs: [setup-azure, cluster-init]
+    needs: [setup-azure, setup-cert-manager]
     uses: ./.github/workflows/_deploy-helm-package-to-aks.yml
     secrets: 
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
