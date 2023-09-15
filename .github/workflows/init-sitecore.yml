@@ -134,6 +134,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       RESOURCE_GROUP: ${{secrets.RESOURCE_GROUP}}
       AZURE_KV_NAME: ${{secrets.AZURE_KV_NAME}}
+      CLOUDFLARE_API_TOKEN: ${{secrets.CLOUDFLARE_API_TOKEN}}
     with:
       environment: ${{ inputs.environment }}
   
