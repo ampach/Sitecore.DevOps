@@ -53,7 +53,7 @@ jobs:
           write-host "Set subscription"          
           az account set --subscription ${{secrets.SUBSCRIPTION_ID}}
 
-          $identity = az identity list --resource-group sitecore-apr_group --query "[?name=='${{secrets.USER_ASSIGNED_IDENTITY_NAME}}']" | ConvertFrom-Json
+          $identity = az identity list --resource-group ${{secrets.RESOURCE_GROUP}} --query "[?name=='${{secrets.USER_ASSIGNED_IDENTITY_NAME}}']" | ConvertFrom-Json
           if($identity.length -eq 0){ 
             write-host "Create a managed identity"        
             az identity create --name ${{secrets.USER_ASSIGNED_IDENTITY_NAME}} --resource-group ${{secrets.RESOURCE_GROUP}}            
