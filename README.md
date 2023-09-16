@@ -32,7 +32,8 @@ In this example, you will create a secret named AZURE_CREDENTIALS that you can u
 1. Open [Azure Cloud Shell](https://learn.microsoft.com/en-us/azure/cloud-shell/overview) in the Azure portal or [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) locally.
 2. [Create a new service principal](https://learn.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli) in the Azure portal for your app. The service principal must be assigned with an appropriate role.
    
-```az ad sp create-for-rbac --name "myApp" --role contributor \
+```
+az ad sp create-for-rbac --name "myApp" --role contributor \
                                 --scopes  /subscriptions/{subscription-id} \
                                 --json-auth
 ```
@@ -42,7 +43,8 @@ The parameter `--json-auth` outputs the result dictionary accepted by the login 
 3. Copy the JSON object for your service principal and put into AZURE_CREDENTIALS secret of you repository.
 
 
-```{
+```
+{
     "clientId": "<GUID>",
     "clientSecret": "<GUID>",
     "subscriptionId": "<GUID>",
@@ -53,6 +55,7 @@ The parameter `--json-auth` outputs the result dictionary accepted by the login 
 
 4. In addition to above, we need to add extra roles to our Service Principal. Execute the following commands one by one, where {clientId} is and client id from json above:
 
-```az role assignment create --assignee {clientId} --role "Key Vault Administrator" --scope  /subscriptions/{subscription-id}
-   az role assignment create --assignee {clientId} --role "Role Based Access Control Administrator (Preview)" --scope  /subscriptions/{subscription-id}
+```
+az role assignment create --assignee {clientId} --role "Key Vault Administrator" --scope  /subscriptions/{subscription-id}
+az role assignment create --assignee {clientId} --role "Role Based Access Control Administrator (Preview)" --scope  /subscriptions/{subscription-id}
 ```
