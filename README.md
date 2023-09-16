@@ -26,3 +26,11 @@ The table below is represent a list of required environment secrets:
 | CLOUDFLARE_API_TOKEN  | Content Cell  | Content Cell  |
 
 # Create a service principal
+
+In this example, you will create a secret named AZURE_CREDENTIALS that you can use to authenticate with Azure.
+
+1. Open [Azure Cloud Shell](https://learn.microsoft.com/en-us/azure/cloud-shell/overview) in the Azure portal or [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) locally.
+2. [Create a new service principal](https://learn.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli) in the Azure portal for your app. The service principal must be assigned with an appropriate role.
+   `az ad sp create-for-rbac --name "myApp" --role contributor \
+                                --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group} \
+                                --json-auth`
