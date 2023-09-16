@@ -1,5 +1,11 @@
 # Sitecore.DevOps
 
+##Github Workflow Secrets
+
+Current deployment process is designed as multi-environment where each environment have own list of secrets to support deployments into different subscriptions/resource groups/clusters.
+
+The table below is represent a list of required environment secrets:
+
 | Name  | Description | Default value |
 | ------------- | ------------- | ------------- |
 | AZURE_KV_NAME  | The name for a key vault in the Microsoft Azure Key Vault service.  |   |
@@ -10,9 +16,13 @@
 | RESOURCE_GROUP  | Name of Azure Resource Group where you have created your Kubernetes cluster (AKS). |  |
 | SERVICE_ACCOUNT_NAME  | Name of Kubernetes Service account which uses a user assigned identity to to authenticate connection between AKS and Azure Key Vault. | sitecore-default-sa  |
 | SUBSCRIPTION_ID  | ID of Subscription where you have created your Resource Group. |   |
-| USER_ASSIGNED_IDENTITY_NAME  | name for user assigned identity. Workloads deployed in Kubernetes clusters require Azure AD application credentials or managed identities to access Azure AD protected resources, such as Azure Key Vault.  | aks_uami  |
+| USER_ASSIGNED_IDENTITY_NAME  | Name for user assigned identity. Workloads deployed in Kubernetes clusters require Azure AD application credentials or managed identities to access Azure AD protected resources, such as Azure Key Vault.  | aks_uami  |
+
+
 
 | Name  | Description | Default value |
 | ------------- | ------------- | ------------- |
-| AZURE_CREDENTIALS  | Content Cell  | Content Cell  |
+| AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [instructions](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Cwindows#use-the-azure-login-action-with-a-service-principal-secret). In addition to   | Content Cell  |
 | CLOUDFLARE_API_TOKEN  | Content Cell  | Content Cell  |
+
+#Create a service principal
