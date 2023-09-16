@@ -34,11 +34,13 @@ In this example, you will create a secret named AZURE_CREDENTIALS that you can u
    
 ```az ad sp create-for-rbac --name "myApp" --role contributor \
                                 --scopes  /subscriptions/{subscription-id} \
-                                --json-auth```
+                                --json-auth
+```
 
 The parameter `--json-auth` outputs the result dictionary accepted by the login action, accessible in Azure CLI versions >= 2.51.0. Versions prior to this use `--sdk-auth` with a deprecation warning.
 
 3. Copy the JSON object for your service principal and put into AZURE_CREDENTIALS secret of you repository.
+
 
 ```{
     "clientId": "<GUID>",
@@ -46,7 +48,8 @@ The parameter `--json-auth` outputs the result dictionary accepted by the login 
     "subscriptionId": "<GUID>",
     "tenantId": "<GUID>",
     (...)
-}```
+   }
+```
 
 4. In addition to above, we need to add extra roles to our Service Principal. Execute the following commands one by one, where {clientId} is and client id from json above:
 
