@@ -22,7 +22,7 @@ The table below is represent a list of required environment secrets:
 
 | Name  | Description | Default value |
 | ------------- | ------------- | ------------- |
-| AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [README.md#create-a-service-principal).  | Content Cell  |
+| AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [instructions](README.md#create-a-service-principal).  | Content Cell  |
 | CLOUDFLARE_API_TOKEN  | Content Cell  | Content Cell  |
 
 # Create a service principal
