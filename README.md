@@ -1,6 +1,6 @@
 # Sitecore.DevOps
 
-##Github Workflow Secrets
+## Github Workflow Secrets
 
 Current deployment process is designed as multi-environment where each environment have own list of secrets to support deployments into different subscriptions/resource groups/clusters.
 
@@ -25,4 +25,4 @@ The table below is represent a list of required environment secrets:
 | AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [instructions](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Cwindows#use-the-azure-login-action-with-a-service-principal-secret). In addition to   | Content Cell  |
 | CLOUDFLARE_API_TOKEN  | Content Cell  | Content Cell  |
 
-#Create a service principal
+# Create a service principal
