@@ -9,7 +9,7 @@ The table below is represent a list of required environment secrets:
 | Name  | Description | Default value |
 | ------------- | ------------- | ------------- |
 | AZURE_KV_NAME  | The name for a key vault in the Microsoft Azure Key Vault service.  |   |
-| AZURE_KV_TENANT_ID  | Azure Key Vault is always associated with some Subscription. In the same time, each subscription has a tenant ID associated with it, and there are a few ways you can find the tenant ID for your subscription: [Azure documentation]https://pages.github.com/](https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/how-to-find-tenant) |   |
+| AZURE_KV_TENANT_ID  | Azure Key Vault is always associated with some Subscription. In the same time, each subscription has a tenant ID associated with it, and there are a few ways you can find the tenant ID for your subscription: [Azure documentation](https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/how-to-find-tenant) |   |
 | CLUSTER_NAME  | Specify names for the Azure Kubernetes Services resource.  |  |
 | ENVIRONMENT_NAMESPACE  | Name of kubernetes namespace that Sitecore will be installed to. | default  |
 | FEDERATED_IDENTITY_NAME  | Name of federated identity that creates credential between the managed identity, service account issuer, and subject  | aks-federated-identity  |
@@ -22,7 +22,7 @@ The table below is represent a list of required environment secrets:
 
 | Name  | Description | Default value |
 | ------------- | ------------- | ------------- |
-| AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [instructions](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Cwindows#use-the-azure-login-action-with-a-service-principal-secret). In addition to   | Content Cell  |
+| AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [README.md#create-a-service-principal).  | Content Cell  |
 | CLOUDFLARE_API_TOKEN  | Content Cell  | Content Cell  |
 
 # Create a service principal
