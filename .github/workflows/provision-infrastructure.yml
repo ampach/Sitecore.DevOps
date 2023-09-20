@@ -1,4 +1,4 @@
-name: Init Sitecore
+name: P
 
 on:  
   workflow_dispatch: 
