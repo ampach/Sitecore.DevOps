@@ -1,4 +1,4 @@
-name: P
+name: Provision Infrastructure
 
 on:  
   workflow_dispatch: 
