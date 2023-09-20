@@ -18,12 +18,12 @@ The table below is represent a list of required environment secrets:
 | SUBSCRIPTION_ID  | ID of Subscription where you have created your Resource Group. |   |
 | USER_ASSIGNED_IDENTITY_NAME  | Name for user assigned identity. Workloads deployed in Kubernetes clusters require Azure AD application credentials or managed identities to access Azure AD protected resources, such as Azure Key Vault.  | aks_uami  |
 
-
+The table below is represent a list of repository secrets:
 
 | Name  | Description | Default value |
 | ------------- | ------------- | ------------- |
-| AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [instructions](README.md#create-a-service-principal).  | Content Cell  |
-| CLOUDFLARE_API_TOKEN  | Content Cell  | Content Cell  |
+| AZURE_CREDENTIALS  | This secret strores service principal json object which is used to authenticate GitHub Actions to communicate with Azure resources. To create a Create a service principal follow the [instructions](README.md#create-a-service-principal).  |  |
+| CLOUDFLARE_API_TOKEN  | cert-manager uses cloudfare DNS1 proveder to sign TLS cerificates. CLOUDFLARE_API_TOKEN is a token that you can obtain in your Cloudflare Dashboard. Read how to [Create Token]https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) |  |
 
 # Create a service principal
 
