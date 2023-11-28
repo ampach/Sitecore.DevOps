@@ -18,7 +18,7 @@ jobs:
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
       ARGS: -f ./sitecore-xm1/values.yaml -f ./sitecore-xm1/values-103.yaml      
     with:
-      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_url: https://ampach.github.io/Sitecore.Helm-Charts
       helm_repo_name: ampach
       chart_name: sitecore-xm1
       namespace: default
