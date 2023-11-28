@@ -148,7 +148,7 @@ jobs:
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
       ARGS: --set ingress-nginx.controller.service.loadBalancerIP=${{needs.setup-azure.outputs.staticIP}} --set 'ingress-nginx.controller.service.annotations.service\.beta\.kubernetes\.io/azure-dns-label-name=${{secrets.CLUSTER_NAME}}-staticip' --set keyvault.clientID=${{needs.setup-azure.outputs.clientID}} --set keyvault.keyvaultName=${{secrets.AZURE_KV_NAME}}  --set keyvault.tenantId=${{secrets.AZURE_KV_TENANT_ID}} --set keyvault.envNamespace=${{secrets.ENVIRONMENT_NAMESPACE}} --set keyvault.serviceAccpuntName=${{secrets.SERVICE_ACCOUNT_NAME}}
     with:
-      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_url: https://ampach.github.io/Sitecore.Helm-Charts
       helm_repo_name: ampach
       chart_name: cluster-init
       namespace: kube-system
@@ -164,7 +164,7 @@ jobs:
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
       ARGS:  --create-namespace
     with:
-      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_url: https://ampach.github.io/Sitecore.Helm-Charts
       helm_repo_name: ampach
       chart_name: cert-manager
       namespace: cert-manager
@@ -180,7 +180,7 @@ jobs:
       CLUSTER_NAME: ${{secrets.CLUSTER_NAME}}
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
     with:
-      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_url: https://ampach.github.io/Sitecore.Helm-Charts
       helm_repo_name: ampach
       chart_name: sitecore-dev
       namespace: default
@@ -197,7 +197,7 @@ jobs:
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
       ARGS: -f ./sitecore-xm1-init/values.yaml -f ./sitecore-xm1-init/values-103.yaml
     with:
-      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_url: https://ampach.github.io/Sitecore.Helm-Charts
       helm_repo_name: ampach
       chart_name: sitecore-xm1-init
       namespace: default
@@ -214,7 +214,7 @@ jobs:
       SUBSCRIPTION_ID: ${{secrets.SUBSCRIPTION_ID}}
       ARGS: -f ./sitecore-xm1-init/values.yaml -f ./sitecore-xm1-init/values-103.yaml
     with:
-      helm_repo_url: https://ampach.github.io/Helm-Charts
+      helm_repo_url: https://ampach.github.io/Sitecore.Helm-Charts
       helm_repo_name: ampach
       chart_name: sitecore-xm1-init
       namespace: default
